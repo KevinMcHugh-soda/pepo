@@ -9,6 +9,7 @@ help:
 	@echo "  run           - Run the application"
 	@echo "  test          - Run tests"
 	@echo "  test-api      - Run API integration tests"
+	@echo "  test-forms    - Run form integration tests"
 	@echo "  clean         - Clean build artifacts"
 	@echo "  generate      - Generate all code (API + DB)"
 	@echo "  generate-api  - Generate API code from OpenAPI spec"
@@ -45,6 +46,11 @@ test:
 test-api: build
 	@echo "Running API integration tests..."
 	./test_api.sh
+
+# Run form integration tests
+test-forms: build
+	@echo "Running form integration tests..."
+	./test_forms.sh
 
 # Clean build artifacts
 clean:

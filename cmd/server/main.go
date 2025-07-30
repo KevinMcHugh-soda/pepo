@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -44,7 +45,7 @@ func main() {
 	}
 
 	// Create HTTP router
-	mux := setupRoutes(srv)
+	mux := setupRoutes(srv, apiHandler)
 
 	// Initialize HTTP server
 	server := &http.Server{
@@ -297,8 +298,147 @@ func (h *APIHandler) DeletePerson(ctx context.Context, params api.DeletePersonPa
 	return &api.DeletePersonNoContent{}, nil
 }
 
+// Form handlers for HTMX integration
+func (h *APIHandler) handleCreatePersonForm(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	name := r.FormValue("name")
+	if name == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`<div class="text-red-500">Name is required</div>`))
+		return
+	}
+
+	// Call the API handler internally
+	req := &api.CreatePersonRequest{Name: name}
+	result, err := h.CreatePerson(r.Context(), req)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`<div class="text-red-500">Failed to create person</div>`))
+		return
+	}
+
+	// Check if result is a person or error
+	switch person := result.(type) {
+	case *api.Person:
+		// Return HTML fragment for the new person
+		html := fmt.Sprintf(`
+			<div class="border-b pb-2 mb-2" id="person-%s">
+				<div class="flex justify-between items-center">
+					<div>
+						<span class="font-medium">%s</span>
+						<span class="text-sm text-gray-500 ml-2">ID: %s</span>
+					</div>
+					<div class="space-x-2">
+						<button hx-get="/forms/persons/%s/edit" hx-target="#person-%s" hx-swap="outerHTML"
+								class="text-blue-500 hover:text-blue-700 text-sm">Edit</button>
+						<button hx-delete="/forms/persons/delete/%s" hx-target="#person-%s" hx-swap="outerHTML"
+								hx-confirm="Are you sure you want to delete this person?"
+								class="text-red-500 hover:text-red-700 text-sm">Delete</button>
+					</div>
+				</div>
+				<div class="text-xs text-gray-400 mt-1">
+					Created: %s
+				</div>
+			</div>`,
+			person.ID, person.Name, person.ID, person.ID, person.ID, person.ID, person.ID,
+			person.CreatedAt.Format("2006-01-02 15:04:05"))
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`<div class="text-red-500">Failed to create person</div>`))
+	}
+}
+
+func (h *APIHandler) handleListPersonsHTML(w http.ResponseWriter, r *http.Request) {
+	// Call the API handler internally
+	params := api.ListPersonsParams{
+		Limit:  api.OptInt{Value: 50, Set: true},
+		Offset: api.OptInt{Value: 0, Set: true},
+	}
+
+	result, err := h.ListPersons(r.Context(), params)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`<div class="text-red-500">Failed to load persons</div>`))
+		return
+	}
+
+	switch listResult := result.(type) {
+	case *api.ListPersonsOK:
+		if len(listResult.Persons) == 0 {
+			w.Write([]byte(`<div class="text-gray-500 text-center py-4">No people found. Add someone above!</div>`))
+			return
+		}
+
+		var html strings.Builder
+		for _, person := range listResult.Persons {
+			html.WriteString(fmt.Sprintf(`
+				<div class="border-b pb-2 mb-2" id="person-%s">
+					<div class="flex justify-between items-center">
+						<div>
+							<span class="font-medium">%s</span>
+							<span class="text-sm text-gray-500 ml-2">ID: %s</span>
+						</div>
+						<div class="space-x-2">
+							<button hx-get="/forms/persons/%s/edit" hx-target="#person-%s" hx-swap="outerHTML"
+									class="text-blue-500 hover:text-blue-700 text-sm">Edit</button>
+							<button hx-delete="/forms/persons/delete/%s" hx-target="#person-%s" hx-swap="outerHTML"
+									hx-confirm="Are you sure you want to delete this person?"
+									class="text-red-500 hover:text-red-700 text-sm">Delete</button>
+						</div>
+					</div>
+					<div class="text-xs text-gray-400 mt-1">
+						Created: %s | Updated: %s
+					</div>
+				</div>`,
+				person.ID, person.Name, person.ID, person.ID, person.ID, person.ID, person.ID,
+				person.CreatedAt.Format("2006-01-02 15:04:05"),
+				person.UpdatedAt.Format("2006-01-02 15:04:05")))
+		}
+
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`<div class="text-red-500">Failed to load persons</div>`))
+	}
+}
+
+func (h *APIHandler) handleDeletePersonForm(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract person ID from URL path
+	pathParts := strings.Split(r.URL.Path, "/")
+	if len(pathParts) < 5 {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`<div class="text-red-500">Invalid person ID</div>`))
+		return
+	}
+	personID := pathParts[4] // /forms/persons/delete/{id}
+
+	// Call the API handler internally
+	params := api.DeletePersonParams{ID: personID}
+	_, err := h.DeletePerson(r.Context(), params)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`<div class="text-red-500">Failed to delete person</div>`))
+		return
+	}
+
+	// Return empty content to remove the element
+	w.WriteHeader(http.StatusOK)
+}
+
 // setupRoutes sets up HTTP routes
-func setupRoutes(apiServer *api.Server) *http.ServeMux {
+func setupRoutes(apiServer *api.Server, formHandler *APIHandler) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Serve static files
@@ -311,6 +451,11 @@ func setupRoutes(apiServer *api.Server) *http.ServeMux {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"ok","timestamp":"` + time.Now().Format(time.RFC3339) + `"}`))
 	})
+
+	// Form handlers for HTMX
+	mux.HandleFunc("/forms/persons/create", formHandler.handleCreatePersonForm)
+	mux.HandleFunc("/forms/persons/list", formHandler.handleListPersonsHTML)
+	mux.HandleFunc("/forms/persons/delete/", formHandler.handleDeletePersonForm)
 
 	// API routes (mount the ogen server)
 	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiServer))
@@ -332,6 +477,7 @@ func setupRoutes(apiServer *api.Server) *http.ServeMux {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Performance Tracking</title>
     <script src="https://unpkg.com/htmx.org@1.9.8"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.8/dist/ext/json-enc.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
@@ -341,7 +487,7 @@ func setupRoutes(apiServer *api.Server) *http.ServeMux {
         <!-- Add Person Form -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h2 class="text-xl font-semibold mb-4">Add New Person</h2>
-            <form hx-post="/api/v1/persons" hx-target="#persons-list" hx-swap="afterbegin">
+            <form hx-post="/forms/persons/create" hx-target="#persons-list" hx-swap="afterbegin">
                 <div class="flex gap-4">
                     <input
                         type="text"
@@ -363,7 +509,7 @@ func setupRoutes(apiServer *api.Server) *http.ServeMux {
         <!-- Persons List -->
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-xl font-semibold mb-4">People</h2>
-            <div id="persons-list" hx-get="/api/v1/persons" hx-trigger="load">
+            <div id="persons-list" hx-get="/forms/persons/list" hx-trigger="load">
                 <p class="text-gray-500">Loading...</p>
             </div>
         </div>
