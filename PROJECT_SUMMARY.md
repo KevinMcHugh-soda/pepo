@@ -60,11 +60,12 @@ pepo/
 ## Core Database Model
 
 ### Person Table
-- **Primary Key**: `id` (VARCHAR(20)) - XID format for globally unique, sortable IDs
+- **Primary Key**: `id` (BYTEA) - XID stored as 12-byte binary data for optimal storage
 - **Name**: `name` (TEXT NOT NULL) - Person's full name with validation
 - **Timestamps**: `created_at`, `updated_at` (TIMESTAMPTZ) - Automatic timestamp management
 - **Indexes**: Optimized for name searches and chronological sorting
 - **Triggers**: Automatic `updated_at` timestamp updates
+- **Helper Functions**: `x2b()` and `b2x()` for XID string ↔ bytea conversion
 
 ## API Implementation
 
@@ -129,7 +130,8 @@ pepo/
 - [x] Comprehensive development automation via Makefile
 
 ### ✅ Database Implementation
-- [x] Person table with XID primary keys
+- [x] Person table (singular) with XID primary keys stored as bytea
+- [x] PL/pgSQL helper functions for XID ↔ bytea conversion
 - [x] Proper indexing for performance
 - [x] Automatic timestamp management
 - [x] Type-safe database queries with sqlc
@@ -194,11 +196,12 @@ pepo/
 ### Advanced Features
 1. **Authentication System** - Complete the bearer token security
 2. **Performance Tracking** - Add metrics, goals, and review cycles
-3. **File Uploads** - Profile pictures and document attachments
-4. **Email Notifications** - Performance review reminders
-5. **Real-time Updates** - WebSocket integration for live updates
-6. **API Rate Limiting** - Production-ready API protection
-7. **Metrics and Monitoring** - Application performance monitoring
+3. **Database Optimization** - Index tuning and query optimization for bytea XIDs
+4. **File Uploads** - Profile pictures and document attachments
+5. **Email Notifications** - Performance review reminders
+6. **Real-time Updates** - WebSocket integration for live updates
+7. **API Rate Limiting** - Production-ready API protection
+8. **Metrics and Monitoring** - Application performance monitoring
 
 ## Getting Started
 
@@ -234,3 +237,10 @@ The project now has a complete, production-ready foundation for a performance tr
 - ✅ Form validation and error handling
 - ✅ Responsive design with Tailwind CSS
 - ✅ All tests passing (API + Forms)
+
+**🗄️ Database Enhancements:**
+- ✅ Singular table naming convention (`person` not `persons`)
+- ✅ Optimized XID storage as bytea (12 bytes vs 20 characters)
+- ✅ Custom PL/pgSQL functions for XID conversion (`x2b`, `b2x`)
+- ✅ Seamless API integration with bytea storage
+- ✅ All CRUD operations working with new schema

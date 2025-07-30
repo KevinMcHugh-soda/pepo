@@ -1,40 +1,40 @@
 -- name: CreatePerson :one
-INSERT INTO persons (id, name)
-VALUES ($1, $2)
-RETURNING id, name, created_at, updated_at;
+INSERT INTO person (id, name)
+VALUES (x2b($1), $2)
+RETURNING b2x(id) as id, name, created_at, updated_at;
 
 -- name: GetPersonByID :one
-SELECT id, name, created_at, updated_at
-FROM persons
-WHERE id = $1;
+SELECT b2x(id) as id, name, created_at, updated_at
+FROM person
+WHERE id = x2b($1);
 
 -- name: ListPersons :many
-SELECT id, name, created_at, updated_at
-FROM persons
+SELECT b2x(id) as id, name, created_at, updated_at
+FROM person
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
 
 -- name: CountPersons :one
-SELECT COUNT(*) FROM persons;
+SELECT COUNT(*) FROM person;
 
 -- name: UpdatePerson :one
-UPDATE persons
+UPDATE person
 SET name = $2, updated_at = NOW()
-WHERE id = $1
-RETURNING id, name, created_at, updated_at;
+WHERE id = x2b($1)
+RETURNING b2x(id) as id, name, created_at, updated_at;
 
 -- name: DeletePerson :exec
-DELETE FROM persons
-WHERE id = $1;
+DELETE FROM person
+WHERE id = x2b($1);
 
 -- name: GetPersonByName :one
-SELECT id, name, created_at, updated_at
-FROM persons
+SELECT b2x(id) as id, name, created_at, updated_at
+FROM person
 WHERE name = $1;
 
 -- name: SearchPersonsByName :many
-SELECT id, name, created_at, updated_at
-FROM persons
+SELECT b2x(id) as id, name, created_at, updated_at
+FROM person
 WHERE name ILIKE '%' || $1 || '%'
 ORDER BY name
 LIMIT $2 OFFSET $3;

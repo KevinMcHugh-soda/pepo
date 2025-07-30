@@ -151,8 +151,8 @@ func (h *APIHandler) CreatePerson(ctx context.Context, req *api.CreatePersonRequ
 
 	// Create person in database
 	person, err := h.queries.CreatePerson(ctx, db.CreatePersonParams{
-		ID:   personID,
-		Name: req.Name,
+		XidStr: personID,
+		Name:   req.Name,
 	})
 	if err != nil {
 		log.Printf("Error creating person: %v", err)
@@ -259,8 +259,8 @@ func (h *APIHandler) UpdatePerson(ctx context.Context, req *api.UpdatePersonRequ
 	}
 
 	person, err := h.queries.UpdatePerson(ctx, db.UpdatePersonParams{
-		ID:   params.ID,
-		Name: req.Name,
+		XidStr: params.ID,
+		Name:   req.Name,
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {
