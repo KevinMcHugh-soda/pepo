@@ -5,7 +5,7 @@ info:
   version: 1.0.0
   contact:
     name: Performance Tracking Team
-    email: team@perf-tracking.com
+    email: help@example.com
 
 servers:
   - url: http://localhost:8080/api/v1
@@ -200,6 +200,278 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /actions:
+    get:
+      summary: List all actions
+      operationId: listActions
+      tags:
+        - actions
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of actions to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of actions to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: person_id
+          in: query
+          description: Filter actions by person ID
+          required: false
+          schema:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+        - name: valence
+          in: query
+          description: Filter actions by valence
+          required: false
+          schema:
+            type: string
+            enum: [positive, negative]
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Action"
+                  total:
+                    type: integer
+                    description: Total number of actions
+                required:
+                  - actions
+                  - total
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      summary: Create a new action
+      operationId: createAction
+      tags:
+        - actions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateActionRequest"
+      responses:
+        "201":
+          description: Action created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Action"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /actions/{id}:
+    get:
+      summary: Get an action by ID
+      operationId: getAction
+      tags:
+        - actions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Action ID (xid)
+          schema:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Action"
+        "404":
+          description: Action not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    put:
+      summary: Update an action
+      operationId: updateAction
+      tags:
+        - actions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Action ID (xid)
+          schema:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateActionRequest"
+      responses:
+        "200":
+          description: Action updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Action"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Action not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      summary: Delete an action
+      operationId: deleteAction
+      tags:
+        - actions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Action ID (xid)
+          schema:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+      responses:
+        "204":
+          description: Action deleted successfully
+        "404":
+          description: Action not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /persons/{id}/actions:
+    get:
+      summary: Get actions for a specific person
+      operationId: getPersonActions
+      tags:
+        - actions
+        - persons
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Person ID (xid)
+          schema:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+        - name: limit
+          in: query
+          description: Maximum number of actions to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of actions to skip
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: valence
+          in: query
+          description: Filter actions by valence
+          required: false
+          schema:
+            type: string
+            enum: [positive, negative]
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Action"
+                  total:
+                    type: integer
+                    description: Total number of actions for this person
+                required:
+                  - actions
+                  - total
+        "404":
+          description: Person not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
 components:
   schemas:
     Person:
@@ -255,6 +527,125 @@ components:
           example: "John Doe"
       required:
         - name
+
+    Action:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier (xid)
+          pattern: "^[0-9a-v]{20}$"
+          example: "9m4e2mr0ui3e8a215n4g"
+        person_id:
+          type: string
+          description: ID of the person this action relates to
+          pattern: "^[0-9a-v]{20}$"
+          example: "9m4e2mr0ui3e8a215n4g"
+        occurred_at:
+          type: string
+          format: date-time
+          description: When the action occurred
+          example: "2023-12-01T10:30:00Z"
+        description:
+          type: string
+          description: Description of the action
+          minLength: 1
+          example: "Completed project ahead of schedule"
+        references:
+          type: string
+          description: References or links related to the action
+          nullable: true
+          example: "https://github.com/user/repo/pull/123"
+        valence:
+          type: string
+          description: Whether the action was positive or negative
+          enum: [positive, negative]
+          example: "positive"
+        created_at:
+          type: string
+          format: date-time
+          description: When the action record was created
+          example: "2023-12-01T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: When the action record was last updated
+          example: "2023-12-01T10:30:00Z"
+      required:
+        - id
+        - person_id
+        - occurred_at
+        - description
+        - valence
+        - created_at
+        - updated_at
+
+    CreateActionRequest:
+      type: object
+      properties:
+        person_id:
+          type: string
+          description: ID of the person this action relates to
+          pattern: "^[0-9a-v]{20}$"
+          example: "9m4e2mr0ui3e8a215n4g"
+        occurred_at:
+          type: string
+          format: date-time
+          description: When the action occurred (defaults to current time if not provided)
+          example: "2023-12-01T10:30:00Z"
+        description:
+          type: string
+          description: Description of the action
+          minLength: 1
+          example: "Completed project ahead of schedule"
+        references:
+          type: string
+          description: References or links related to the action
+          nullable: true
+          example: "https://github.com/user/repo/pull/123"
+        valence:
+          type: string
+          description: Whether the action was positive or negative
+          enum: [positive, negative]
+          example: "positive"
+      required:
+        - person_id
+        - description
+        - valence
+
+    UpdateActionRequest:
+      type: object
+      properties:
+        person_id:
+          type: string
+          description: ID of the person this action relates to
+          pattern: "^[0-9a-v]{20}$"
+          example: "9m4e2mr0ui3e8a215n4g"
+        occurred_at:
+          type: string
+          format: date-time
+          description: When the action occurred
+          example: "2023-12-01T10:30:00Z"
+        description:
+          type: string
+          description: Description of the action
+          minLength: 1
+          example: "Completed project ahead of schedule"
+        references:
+          type: string
+          description: References or links related to the action
+          nullable: true
+          example: "https://github.com/user/repo/pull/123"
+        valence:
+          type: string
+          description: Whether the action was positive or negative
+          enum: [positive, negative]
+          example: "positive"
+      required:
+        - person_id
+        - occurred_at
+        - description
+        - valence
 
     Error:
       type: object

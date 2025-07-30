@@ -10,6 +10,16 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: valence_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.valence_type AS ENUM (
+    'positive',
+    'negative'
+);
+
+
+--
 -- Name: b2x(bytea); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -133,6 +143,23 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: action; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.action (
+    id bytea NOT NULL,
+    person_id bytea NOT NULL,
+    occurred_at timestamp with time zone DEFAULT now() NOT NULL,
+    description text NOT NULL,
+    "references" text,
+    valence public.valence_type NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT action_description_check CHECK ((length(TRIM(BOTH FROM description)) > 0))
+);
+
+
+--
 -- Name: person; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -155,6 +182,14 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: action action_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.action
+    ADD CONSTRAINT action_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: person person_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -168,6 +203,34 @@ ALTER TABLE ONLY public.person
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: idx_action_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_action_created_at ON public.action USING btree (created_at);
+
+
+--
+-- Name: idx_action_occurred_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_action_occurred_at ON public.action USING btree (occurred_at DESC);
+
+
+--
+-- Name: idx_action_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_action_person_id ON public.action USING btree (person_id);
+
+
+--
+-- Name: idx_action_valence; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_action_valence ON public.action USING btree (valence);
 
 
 --
@@ -185,10 +248,25 @@ CREATE INDEX idx_person_name ON public.person USING btree (name);
 
 
 --
+-- Name: action update_action_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_action_updated_at BEFORE UPDATE ON public.action FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
 -- Name: person update_person_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_person_updated_at BEFORE UPDATE ON public.person FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: action action_person_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.action
+    ADD CONSTRAINT action_person_id_fkey FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
 
 
 --
@@ -202,4 +280,5 @@ CREATE TRIGGER update_person_updated_at BEFORE UPDATE ON public.person FOR EACH 
 
 INSERT INTO public.schema_migrations (version) VALUES
     ('20250730100649'),
-    ('20250730152732');
+    ('20250730152732'),
+    ('20250730204830');

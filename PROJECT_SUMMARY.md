@@ -67,15 +67,38 @@ pepo/
 - **Triggers**: Automatic `updated_at` timestamp updates
 - **Helper Functions**: `x2b()` and `b2x()` for XID string ↔ bytea conversion
 
+### Action Table
+- **Primary Key**: `id` (BYTEA) - XID stored as 12-byte binary data
+- **Foreign Key**: `person_id` (BYTEA) - References person(id) with CASCADE delete
+- **Occurred At**: `occurred_at` (TIMESTAMPTZ) - When the action happened (defaults to now)
+- **Description**: `description` (TEXT NOT NULL) - What the person did
+- **References**: `references` (TEXT) - Optional links or references
+- **Valence**: `valence` (ENUM) - 'positive' or 'negative' action type
+- **Timestamps**: `created_at`, `updated_at` (TIMESTAMPTZ) - Automatic timestamp management
+- **Indexes**: Optimized for person_id, occurred_at, and valence queries
+- **Constraints**: Description length validation, cascading deletes
+
 ## API Implementation
 
 ### Endpoints Implemented
+
+#### Person Management
 - `GET /health` - Health check endpoint
 - `GET /api/v1/persons` - List all persons with pagination
 - `POST /api/v1/persons` - Create new person
 - `GET /api/v1/persons/{id}` - Get person by XID
 - `PUT /api/v1/persons/{id}` - Update person
 - `DELETE /api/v1/persons/{id}` - Delete person
+
+#### Action Management
+- `GET /api/v1/actions` - List all actions with filtering and pagination
+- `POST /api/v1/actions` - Create new action
+- `GET /api/v1/actions/{id}` - Get action by XID
+- `PUT /api/v1/actions/{id}` - Update action
+- `DELETE /api/v1/actions/{id}` - Delete action
+- `GET /api/v1/persons/{id}/actions` - Get all actions for a specific person
+
+#### Utility
 - `GET /api/v1/demo/xid` - XID generation demonstration
 
 ### Features Implemented
@@ -84,7 +107,10 @@ pepo/
 - **Request validation** for required fields and data formats
 - **XID pattern validation** using regex patterns
 - **Pagination support** with configurable limits and offsets
+- **Advanced filtering** - by person, valence, date ranges
 - **JSON request/response handling** with automatic serialization
+- **Cascading relationships** - actions automatically link to persons
+- **Enum validation** - valence type enforcement at API and database level
 - **Bearer token authentication structure** (ready for implementation)
 
 ## Development Workflow
@@ -131,26 +157,36 @@ pepo/
 
 ### ✅ Database Implementation
 - [x] Person table (singular) with XID primary keys stored as bytea
+- [x] Action table with full relationship to Person table
 - [x] PL/pgSQL helper functions for XID ↔ bytea conversion
-- [x] Proper indexing for performance
-- [x] Automatic timestamp management
-- [x] Type-safe database queries with sqlc
+- [x] Proper indexing for performance on both tables
+- [x] Automatic timestamp management with triggers
+- [x] Type-safe database queries with sqlc (persons + actions)
 - [x] Migration-based schema management
+- [x] Enum types for action valence (positive/negative)
+- [x] Cascading deletes and referential integrity
 
 ### ✅ API Implementation
-- [x] OpenAPI 3.0 specification with full CRUD operations
-- [x] Generated type-safe API handlers
+- [x] OpenAPI 3.0 specification with full CRUD operations (persons + actions)
+- [x] Generated type-safe API handlers for all endpoints
 - [x] Comprehensive error handling with proper HTTP codes
 - [x] Request validation and parameter binding
+- [x] Advanced filtering (person_id, valence, pagination)
 - [x] Bearer token authentication framework
-- [x] Pagination support for list operations
+- [x] Pagination support for all list operations
+- [x] Person-specific action endpoints
+- [x] Optional field handling (references, occurred_at)
 
 ### ✅ Web Interface Implementation
-- [x] HTMX-powered dynamic form interactions
+- [x] HTMX-powered dynamic form interactions for persons and actions
 - [x] Form handlers that convert HTML forms to API calls
-- [x] Real-time person creation without page refresh
+- [x] Real-time person and action creation without page refresh
 - [x] Interactive person list with edit/delete capabilities
-- [x] Tailwind CSS responsive design
+- [x] Action recording form with person dropdown, valence selection
+- [x] Action list with color-coded valence indicators
+- [x] Dynamic person loading for action form dropdowns
+- [x] Optional fields handling (references links, custom timestamps)
+- [x] Tailwind CSS responsive design with two-column layout
 - [x] Form validation with user-friendly error messages
 
 ### ✅ Development Experience
@@ -172,36 +208,46 @@ pepo/
 
 ### Immediate Functionality
 1. **Complete Person CRUD API** - Fully functional with validation
-2. **Database persistence** - PostgreSQL with migrations
-3. **Full web interface** - HTMX + Tailwind CSS with working forms
-4. **Development environment** - One command setup and testing
-5. **API documentation** - Generated from OpenAPI specification
+2. **Complete Action CRUD API** - Record, update, delete actions with filtering
+3. **Person-Action Relationships** - Track what people did with full context
+4. **Database persistence** - PostgreSQL with migrations and relationships
+5. **Full web interface** - HTMX + Tailwind CSS with working forms for both entities
+6. **Action recording UI** - Form with person selection, valence, references
+7. **Development environment** - One command setup and testing
+8. **API documentation** - Generated from OpenAPI specification
 
 ### Frontend Complete
-- **HTMX integration** with working dynamic interactions
+- **HTMX integration** with working dynamic interactions for persons and actions
 - **Tailwind CSS** configured for rapid UI development
-- **Responsive layout** with complete person management UI
-- **Form handling** fully implemented for all CRUD operations
+- **Responsive two-column layout** with person and action management
+- **Action recording interface** with person dropdown, valence selection, optional fields
+- **Color-coded action display** with positive/negative visual indicators
+- **Form handling** fully implemented for all CRUD operations on both entities
+- **Dynamic data loading** - person dropdown populated via HTMX
 - **API integration** seamlessly bridging forms to REST API
 
 ## Next Steps for Development
 
 ### Immediate Extensions
 1. **Authentication Implementation** - Complete the bearer token security handler
-2. **Frontend Enhancement** - Expand HTMX interactions for full CRUD UI
-3. **Performance Tracking Features** - Add performance metrics and reviews
-4. **User Management** - Extend person model with roles and permissions
-5. **Reporting Dashboard** - Add analytics and reporting features
+2. **Action Analytics** - Charts and trending for positive vs negative actions
+3. **Action Categories** - Expand beyond positive/negative to specific categories
+4. **Performance Reviews** - Structured review cycles based on recorded actions
+5. **User Management** - Extend person model with roles and permissions
+6. **Reporting Dashboard** - Add analytics and reporting features
+7. **Action Templates** - Pre-defined common action types for quick entry
 
 ### Advanced Features
 1. **Authentication System** - Complete the bearer token security
-2. **Performance Tracking** - Add metrics, goals, and review cycles
-3. **Database Optimization** - Index tuning and query optimization for bytea XIDs
-4. **File Uploads** - Profile pictures and document attachments
-5. **Email Notifications** - Performance review reminders
-6. **Real-time Updates** - WebSocket integration for live updates
-7. **API Rate Limiting** - Production-ready API protection
-8. **Metrics and Monitoring** - Application performance monitoring
+2. **Action Search** - Full-text search across action descriptions
+3. **Action Workflows** - Approval processes for sensitive actions
+4. **Performance Analytics** - Advanced reporting and trend analysis
+5. **Database Optimization** - Index tuning and query optimization for bytea XIDs
+6. **File Uploads** - Attach documents/evidence to actions
+7. **Email Notifications** - Action alerts and performance review reminders
+8. **Real-time Updates** - WebSocket integration for live action feeds
+9. **API Rate Limiting** - Production-ready API protection
+10. **Metrics and Monitoring** - Application performance monitoring
 
 ## Getting Started
 
@@ -226,21 +272,42 @@ make test-forms     # Validate web interface functionality
 - Database accessible via pgAdmin at http://localhost:5050
 - All tests pass with `make test-api`
 
-## Project Status: ✅ COMPLETE & FUNCTIONAL
+## Project Status: ✅ COMPLETE & FULLY FUNCTIONAL
 
-The project now has a complete, production-ready foundation for a performance tracking application with a fully functional web interface. All core infrastructure is in place, users can create/manage people through the web UI, and the application is ready for performance tracking feature development and customization according to specific business requirements.
+The project now has a complete, production-ready foundation for a performance tracking application with full Actions functionality implemented. Users can now record what people did, categorize actions as positive or negative, and track performance over time through both API and web interface.
+
+**🎉 Actions Feature Fully Implemented:**
+- ✅ Complete Action CRUD API with filtering capabilities
+- ✅ Action recording web interface with person selection
+- ✅ Positive/negative valence tracking with visual indicators
+- ✅ Optional references/links support
+- ✅ Flexible timestamp handling (defaults to now)
+- ✅ Person-action relationships with cascading deletes
 
 **🎉 Web Interface Verified Working:**
-- ✅ Person creation via web forms
+- ✅ Person creation and management via web forms
+- ✅ Action recording form with person dropdown
 - ✅ Dynamic person listing with HTMX
-- ✅ Edit and delete functionality
+- ✅ Action listing with color-coded valence indicators
+- ✅ Edit and delete functionality for both entities
 - ✅ Form validation and error handling
-- ✅ Responsive design with Tailwind CSS
+- ✅ Responsive two-column design with Tailwind CSS
 - ✅ All tests passing (API + Forms)
 
 **🗄️ Database Enhancements:**
-- ✅ Singular table naming convention (`person` not `persons`)
+- ✅ Singular table naming convention (`person`, `action`)
+- ✅ Full person-action relationship with foreign keys
 - ✅ Optimized XID storage as bytea (12 bytes vs 20 characters)
 - ✅ Custom PL/pgSQL functions for XID conversion (`x2b`, `b2x`)
+- ✅ Enum types for action valence validation
+- ✅ Proper indexing for performance queries
 - ✅ Seamless API integration with bytea storage
-- ✅ All CRUD operations working with new schema
+- ✅ All CRUD operations working with relational schema
+
+**🚀 Ready for Performance Management:**
+The application now provides the core functionality needed to track and manage performance:
+- Record specific actions people take
+- Categorize them as positive or negative
+- View action history per person
+- Filter and search actions
+- Ready for analytics and reporting extensions
