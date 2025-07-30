@@ -1,4 +1,4 @@
-.PHONY: help build run test clean setup migrate migrate-up migrate-down migrate-status generate generate-api generate-db dev docker-up docker-down
+.PHONY: help build build-release version run test clean setup migrate migrate-up migrate-down migrate-status generate generate-api generate-db dev docker-up docker-down
 
 # Default target
 help:
@@ -6,6 +6,8 @@ help:
 	@echo "  help          - Show this help message"
 	@echo "  setup         - Set up development environment"
 	@echo "  build         - Build the application"
+	@echo "  build-release - Build the application with version info"
+	@echo "  version       - Show version information"
 	@echo "  run           - Run the application"
 	@echo "  test          - Run tests"
 	@echo "  test-api      - Run API integration tests"
@@ -14,6 +16,7 @@ help:
 	@echo "  generate      - Generate all code (API + DB)"
 	@echo "  generate-api  - Generate API code from OpenAPI spec"
 	@echo "  generate-db   - Generate database code from SQL queries"
+	@echo "  generate-templ- Generate Go code from templ templates"
 	@echo "  migrate       - Run database migrations"
 	@echo "  migrate-up    - Run database migrations (up)"
 	@echo "  migrate-down  - Rollback last migration"
@@ -27,10 +30,30 @@ GOBASE=$(shell pwd)
 GOBIN=$(GOBASE)/bin
 GOFILES=$(wildcard *.go)
 
+# Version variables
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+LDFLAGS = -ldflags "-X pepo/internal/version.Version=$(VERSION) -X pepo/internal/version.Commit=$(COMMIT) -X pepo/internal/version.Date=$(DATE)"
+
 # Build the application
 build:
 	@echo "Building application..."
 	go build -o $(GOBIN)/pepo ./cmd/server
+
+# Build the application with version information
+build-release:
+	@echo "Building application with version info..."
+	@echo "Version: $(VERSION)"
+	@echo "Commit: $(COMMIT)"
+	@echo "Date: $(DATE)"
+	go build $(LDFLAGS) -o $(GOBIN)/pepo ./cmd/server
+
+# Show version information
+version:
+	@echo "Version: $(VERSION)"
+	@echo "Commit: $(COMMIT)"
+	@echo "Date: $(DATE)"
 
 # Run the application
 run: build
@@ -66,10 +89,11 @@ setup:
 	go install github.com/amacneil/dbmate/v2@latest
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	go install github.com/ogen-go/ogen/cmd/ogen@latest
+	go install github.com/a-h/templ/cmd/templ@latest
 	@echo "Development environment setup complete!"
 
 # Generate all code
-generate: generate-api generate-db
+generate: generate-api generate-db generate-templ
 
 # Generate API code from OpenAPI specification
 generate-api:
@@ -82,6 +106,11 @@ generate-db:
 	@echo "Generating database code..."
 	mkdir -p internal/db
 	~/go/bin/sqlc generate
+
+# Generate template code from templ files
+generate-templ:
+	@echo "Generating template code..."
+	~/go/bin/templ generate
 
 # Database migration commands
 migrate: migrate-up

@@ -1,0 +1,68 @@
+package templates
+
+import "time"
+
+type Person struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+templ PersonItem(person Person) {
+	<div class="border-b pb-2 mb-2" id={ "person-" + person.ID }>
+		<div class="flex justify-between items-center">
+			<div>
+				<span class="font-medium">{ person.Name }</span>
+				<span class="text-sm text-gray-500 ml-2">ID: { person.ID }</span>
+			</div>
+			<div class="space-x-2">
+				<button
+					hx-get={ "/forms/persons/" + person.ID + "/edit" }
+					hx-target={ "#person-" + person.ID }
+					hx-swap="outerHTML"
+					class="text-blue-500 hover:text-blue-700 text-sm"
+				>
+					Edit
+				</button>
+				<button
+					hx-delete={ "/forms/persons/delete/" + person.ID }
+					hx-target={ "#person-" + person.ID }
+					hx-swap="outerHTML"
+					hx-confirm="Are you sure you want to delete this person?"
+					class="text-red-500 hover:text-red-700 text-sm"
+				>
+					Delete
+				</button>
+			</div>
+		</div>
+		<div class="text-xs text-gray-400 mt-1">
+			Created: { person.CreatedAt.Format("2006-01-02 15:04:05") } | Updated: { person.UpdatedAt.Format("2006-01-02 15:04:05") }
+		</div>
+	</div>
+}
+
+templ PersonList(persons []Person) {
+	if len(persons) == 0 {
+		<div class="text-gray-500 text-center py-4">No people found. Add someone above!</div>
+	} else {
+		for _, person := range persons {
+			@PersonItem(person)
+		}
+	}
+}
+
+templ PersonSelectOptions(persons []Person) {
+	<option value="">Select a person...</option>
+	for _, person := range persons {
+		<option value={ person.ID }>{ person.Name }</option>
+	}
+}
+
+templ PersonSelectError() {
+	<option value="">Error loading persons</option>
+}
+
+templ PersonSelectLoading() {
+	<option value="">Loading persons...</option>
+}
