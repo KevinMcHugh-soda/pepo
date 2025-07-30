@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/rs/xid"
+	xidb "github.com/rs/xid/b"
 
 	"pepo/internal/api"
 	"pepo/internal/db"
@@ -26,10 +27,10 @@ func NewActionHandler(queries *db.Queries) *ActionHandler {
 }
 
 // Helper function to convert database action row to API action
-func convertToAPIAction(id, personID string, occurredAt time.Time, description string, references sql.NullString, valence db.ValenceType, createdAt, updatedAt time.Time) api.Action {
+func convertToAPIAction(id, personID xidb.ID, occurredAt time.Time, description string, references sql.NullString, valence db.ValenceType, createdAt, updatedAt time.Time) api.Action {
 	apiAction := api.Action{
-		ID:          id,
-		PersonID:    personID,
+		ID:          id.String(),
+		PersonID:    personID.String(),
 		OccurredAt:  occurredAt,
 		Description: description,
 		Valence:     api.ActionValence(valence),
@@ -102,8 +103,8 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 
 	// Convert to API response
 	apiAction := &api.Action{
-		ID:          action.ID,
-		PersonID:    action.PersonID,
+		ID:          action.ID.String(),
+		PersonID:    action.PersonID.String(),
 		OccurredAt:  action.OccurredAt,
 		Description: action.Description,
 		Valence:     api.ActionValence(action.Valence),
@@ -135,8 +136,8 @@ func (h *ActionHandler) GetAction(ctx context.Context, params api.GetActionParam
 	}
 
 	apiAction := &api.Action{
-		ID:          action.ID,
-		PersonID:    action.PersonID,
+		ID:          action.ID.String(),
+		PersonID:    action.PersonID.String(),
 		OccurredAt:  action.OccurredAt,
 		Description: action.Description,
 		Valence:     api.ActionValence(action.Valence),
@@ -271,8 +272,8 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 	}
 
 	apiAction := &api.Action{
-		ID:          action.ID,
-		PersonID:    action.PersonID,
+		ID:          action.ID.String(),
+		PersonID:    action.PersonID.String(),
 		OccurredAt:  action.OccurredAt,
 		Description: action.Description,
 		Valence:     api.ActionValence(action.Valence),

@@ -36,7 +36,7 @@ func (q *Queries) CountActionsByPersonID(ctx context.Context, xidStr string) (in
 const createAction = `-- name: CreateAction :one
 INSERT INTO action (id, person_id, occurred_at, description, "references", valence)
 VALUES (x2b($1), x2b($2), $3, $4, $5, $6)
-RETURNING b2x(id) as id, b2x(person_id) as person_id, occurred_at, description, "references", valence, created_at, updated_at
+RETURNING id, person_id, occurred_at, description, "references", valence, created_at, updated_at
 `
 
 type CreateActionParams struct {
@@ -48,18 +48,7 @@ type CreateActionParams struct {
 	Valence     ValenceType    `db:"valence" json:"valence"`
 }
 
-type CreateActionRow struct {
-	ID          string         `db:"id" json:"id"`
-	PersonID    string         `db:"person_id" json:"person_id"`
-	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
-	Description string         `db:"description" json:"description"`
-	References  sql.NullString `db:"references" json:"references"`
-	Valence     ValenceType    `db:"valence" json:"valence"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) CreateAction(ctx context.Context, arg CreateActionParams) (CreateActionRow, error) {
+func (q *Queries) CreateAction(ctx context.Context, arg CreateActionParams) (Action, error) {
 	row := q.db.QueryRowContext(ctx, createAction,
 		arg.XidStr,
 		arg.XidStr_2,
@@ -68,7 +57,7 @@ func (q *Queries) CreateAction(ctx context.Context, arg CreateActionParams) (Cre
 		arg.References,
 		arg.Valence,
 	)
-	var i CreateActionRow
+	var i Action
 	err := row.Scan(
 		&i.ID,
 		&i.PersonID,
@@ -93,25 +82,14 @@ func (q *Queries) DeleteAction(ctx context.Context, xidStr string) error {
 }
 
 const getActionByID = `-- name: GetActionByID :one
-SELECT b2x(id) as id, b2x(person_id) as person_id, occurred_at, description, "references", valence, created_at, updated_at
+SELECT id, person_id, occurred_at, description, "references", valence, created_at, updated_at
 FROM action
 WHERE id = x2b($1)
 `
 
-type GetActionByIDRow struct {
-	ID          string         `db:"id" json:"id"`
-	PersonID    string         `db:"person_id" json:"person_id"`
-	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
-	Description string         `db:"description" json:"description"`
-	References  sql.NullString `db:"references" json:"references"`
-	Valence     ValenceType    `db:"valence" json:"valence"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) GetActionByID(ctx context.Context, xidStr string) (GetActionByIDRow, error) {
+func (q *Queries) GetActionByID(ctx context.Context, xidStr string) (Action, error) {
 	row := q.db.QueryRowContext(ctx, getActionByID, xidStr)
-	var i GetActionByIDRow
+	var i Action
 	err := row.Scan(
 		&i.ID,
 		&i.PersonID,
@@ -126,7 +104,7 @@ func (q *Queries) GetActionByID(ctx context.Context, xidStr string) (GetActionBy
 }
 
 const getActionsByDateRange = `-- name: GetActionsByDateRange :many
-SELECT b2x(id) as id, b2x(person_id) as person_id, occurred_at, description, "references", valence, created_at, updated_at
+SELECT id, person_id, occurred_at, description, "references", valence, created_at, updated_at
 FROM action
 WHERE occurred_at >= $1 AND occurred_at <= $2
 ORDER BY occurred_at DESC
@@ -140,18 +118,7 @@ type GetActionsByDateRangeParams struct {
 	Offset       int32     `db:"offset" json:"offset"`
 }
 
-type GetActionsByDateRangeRow struct {
-	ID          string         `db:"id" json:"id"`
-	PersonID    string         `db:"person_id" json:"person_id"`
-	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
-	Description string         `db:"description" json:"description"`
-	References  sql.NullString `db:"references" json:"references"`
-	Valence     ValenceType    `db:"valence" json:"valence"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) GetActionsByDateRange(ctx context.Context, arg GetActionsByDateRangeParams) ([]GetActionsByDateRangeRow, error) {
+func (q *Queries) GetActionsByDateRange(ctx context.Context, arg GetActionsByDateRangeParams) ([]Action, error) {
 	rows, err := q.db.QueryContext(ctx, getActionsByDateRange,
 		arg.OccurredAt,
 		arg.OccurredAt_2,
@@ -162,9 +129,9 @@ func (q *Queries) GetActionsByDateRange(ctx context.Context, arg GetActionsByDat
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetActionsByDateRangeRow{}
+	items := []Action{}
 	for rows.Next() {
-		var i GetActionsByDateRangeRow
+		var i Action
 		if err := rows.Scan(
 			&i.ID,
 			&i.PersonID,
@@ -256,7 +223,7 @@ func (q *Queries) GetActionsWithPersonDetails(ctx context.Context, arg GetAction
 }
 
 const getRecentActionsByPersonID = `-- name: GetRecentActionsByPersonID :many
-SELECT b2x(id) as id, b2x(person_id) as person_id, occurred_at, description, "references", valence, created_at, updated_at
+SELECT id, person_id, occurred_at, description, "references", valence, created_at, updated_at
 FROM action
 WHERE person_id = x2b($1) AND occurred_at >= $2
 ORDER BY occurred_at DESC
@@ -270,18 +237,7 @@ type GetRecentActionsByPersonIDParams struct {
 	Offset     int32     `db:"offset" json:"offset"`
 }
 
-type GetRecentActionsByPersonIDRow struct {
-	ID          string         `db:"id" json:"id"`
-	PersonID    string         `db:"person_id" json:"person_id"`
-	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
-	Description string         `db:"description" json:"description"`
-	References  sql.NullString `db:"references" json:"references"`
-	Valence     ValenceType    `db:"valence" json:"valence"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) GetRecentActionsByPersonID(ctx context.Context, arg GetRecentActionsByPersonIDParams) ([]GetRecentActionsByPersonIDRow, error) {
+func (q *Queries) GetRecentActionsByPersonID(ctx context.Context, arg GetRecentActionsByPersonIDParams) ([]Action, error) {
 	rows, err := q.db.QueryContext(ctx, getRecentActionsByPersonID,
 		arg.XidStr,
 		arg.OccurredAt,
@@ -292,9 +248,9 @@ func (q *Queries) GetRecentActionsByPersonID(ctx context.Context, arg GetRecentA
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetRecentActionsByPersonIDRow{}
+	items := []Action{}
 	for rows.Next() {
-		var i GetRecentActionsByPersonIDRow
+		var i Action
 		if err := rows.Scan(
 			&i.ID,
 			&i.PersonID,
@@ -319,7 +275,7 @@ func (q *Queries) GetRecentActionsByPersonID(ctx context.Context, arg GetRecentA
 }
 
 const listActions = `-- name: ListActions :many
-SELECT b2x(id) as id, b2x(person_id) as person_id, occurred_at, description, "references", valence, created_at, updated_at
+SELECT id, person_id, occurred_at, description, "references", valence, created_at, updated_at
 FROM action
 ORDER BY occurred_at DESC
 LIMIT $1 OFFSET $2
@@ -330,26 +286,15 @@ type ListActionsParams struct {
 	Offset int32 `db:"offset" json:"offset"`
 }
 
-type ListActionsRow struct {
-	ID          string         `db:"id" json:"id"`
-	PersonID    string         `db:"person_id" json:"person_id"`
-	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
-	Description string         `db:"description" json:"description"`
-	References  sql.NullString `db:"references" json:"references"`
-	Valence     ValenceType    `db:"valence" json:"valence"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) ListActions(ctx context.Context, arg ListActionsParams) ([]ListActionsRow, error) {
+func (q *Queries) ListActions(ctx context.Context, arg ListActionsParams) ([]Action, error) {
 	rows, err := q.db.QueryContext(ctx, listActions, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListActionsRow{}
+	items := []Action{}
 	for rows.Next() {
-		var i ListActionsRow
+		var i Action
 		if err := rows.Scan(
 			&i.ID,
 			&i.PersonID,
@@ -374,7 +319,7 @@ func (q *Queries) ListActions(ctx context.Context, arg ListActionsParams) ([]Lis
 }
 
 const listActionsByPersonID = `-- name: ListActionsByPersonID :many
-SELECT b2x(id) as id, b2x(person_id) as person_id, occurred_at, description, "references", valence, created_at, updated_at
+SELECT id, person_id, occurred_at, description, "references", valence, created_at, updated_at
 FROM action
 WHERE person_id = x2b($1)
 ORDER BY occurred_at DESC
@@ -387,26 +332,15 @@ type ListActionsByPersonIDParams struct {
 	Offset int32  `db:"offset" json:"offset"`
 }
 
-type ListActionsByPersonIDRow struct {
-	ID          string         `db:"id" json:"id"`
-	PersonID    string         `db:"person_id" json:"person_id"`
-	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
-	Description string         `db:"description" json:"description"`
-	References  sql.NullString `db:"references" json:"references"`
-	Valence     ValenceType    `db:"valence" json:"valence"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) ListActionsByPersonID(ctx context.Context, arg ListActionsByPersonIDParams) ([]ListActionsByPersonIDRow, error) {
+func (q *Queries) ListActionsByPersonID(ctx context.Context, arg ListActionsByPersonIDParams) ([]Action, error) {
 	rows, err := q.db.QueryContext(ctx, listActionsByPersonID, arg.XidStr, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListActionsByPersonIDRow{}
+	items := []Action{}
 	for rows.Next() {
-		var i ListActionsByPersonIDRow
+		var i Action
 		if err := rows.Scan(
 			&i.ID,
 			&i.PersonID,
@@ -431,7 +365,7 @@ func (q *Queries) ListActionsByPersonID(ctx context.Context, arg ListActionsByPe
 }
 
 const listActionsByPersonIDAndValence = `-- name: ListActionsByPersonIDAndValence :many
-SELECT b2x(id) as id, b2x(person_id) as person_id, occurred_at, description, "references", valence, created_at, updated_at
+SELECT id, person_id, occurred_at, description, "references", valence, created_at, updated_at
 FROM action
 WHERE person_id = x2b($1) AND valence = $2
 ORDER BY occurred_at DESC
@@ -445,18 +379,7 @@ type ListActionsByPersonIDAndValenceParams struct {
 	Offset  int32       `db:"offset" json:"offset"`
 }
 
-type ListActionsByPersonIDAndValenceRow struct {
-	ID          string         `db:"id" json:"id"`
-	PersonID    string         `db:"person_id" json:"person_id"`
-	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
-	Description string         `db:"description" json:"description"`
-	References  sql.NullString `db:"references" json:"references"`
-	Valence     ValenceType    `db:"valence" json:"valence"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) ListActionsByPersonIDAndValence(ctx context.Context, arg ListActionsByPersonIDAndValenceParams) ([]ListActionsByPersonIDAndValenceRow, error) {
+func (q *Queries) ListActionsByPersonIDAndValence(ctx context.Context, arg ListActionsByPersonIDAndValenceParams) ([]Action, error) {
 	rows, err := q.db.QueryContext(ctx, listActionsByPersonIDAndValence,
 		arg.XidStr,
 		arg.Valence,
@@ -467,9 +390,9 @@ func (q *Queries) ListActionsByPersonIDAndValence(ctx context.Context, arg ListA
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListActionsByPersonIDAndValenceRow{}
+	items := []Action{}
 	for rows.Next() {
-		var i ListActionsByPersonIDAndValenceRow
+		var i Action
 		if err := rows.Scan(
 			&i.ID,
 			&i.PersonID,
@@ -494,7 +417,7 @@ func (q *Queries) ListActionsByPersonIDAndValence(ctx context.Context, arg ListA
 }
 
 const listActionsByValence = `-- name: ListActionsByValence :many
-SELECT b2x(id) as id, b2x(person_id) as person_id, occurred_at, description, "references", valence, created_at, updated_at
+SELECT id, person_id, occurred_at, description, "references", valence, created_at, updated_at
 FROM action
 WHERE valence = $1
 ORDER BY occurred_at DESC
@@ -507,26 +430,15 @@ type ListActionsByValenceParams struct {
 	Offset  int32       `db:"offset" json:"offset"`
 }
 
-type ListActionsByValenceRow struct {
-	ID          string         `db:"id" json:"id"`
-	PersonID    string         `db:"person_id" json:"person_id"`
-	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
-	Description string         `db:"description" json:"description"`
-	References  sql.NullString `db:"references" json:"references"`
-	Valence     ValenceType    `db:"valence" json:"valence"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) ListActionsByValence(ctx context.Context, arg ListActionsByValenceParams) ([]ListActionsByValenceRow, error) {
+func (q *Queries) ListActionsByValence(ctx context.Context, arg ListActionsByValenceParams) ([]Action, error) {
 	rows, err := q.db.QueryContext(ctx, listActionsByValence, arg.Valence, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListActionsByValenceRow{}
+	items := []Action{}
 	for rows.Next() {
-		var i ListActionsByValenceRow
+		var i Action
 		if err := rows.Scan(
 			&i.ID,
 			&i.PersonID,
@@ -551,7 +463,7 @@ func (q *Queries) ListActionsByValence(ctx context.Context, arg ListActionsByVal
 }
 
 const searchActionsByDescription = `-- name: SearchActionsByDescription :many
-SELECT b2x(id) as id, b2x(person_id) as person_id, occurred_at, description, "references", valence, created_at, updated_at
+SELECT id, person_id, occurred_at, description, "references", valence, created_at, updated_at
 FROM action
 WHERE description ILIKE '%' || $1 || '%'
 ORDER BY occurred_at DESC
@@ -564,26 +476,15 @@ type SearchActionsByDescriptionParams struct {
 	Offset  int32          `db:"offset" json:"offset"`
 }
 
-type SearchActionsByDescriptionRow struct {
-	ID          string         `db:"id" json:"id"`
-	PersonID    string         `db:"person_id" json:"person_id"`
-	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
-	Description string         `db:"description" json:"description"`
-	References  sql.NullString `db:"references" json:"references"`
-	Valence     ValenceType    `db:"valence" json:"valence"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) SearchActionsByDescription(ctx context.Context, arg SearchActionsByDescriptionParams) ([]SearchActionsByDescriptionRow, error) {
+func (q *Queries) SearchActionsByDescription(ctx context.Context, arg SearchActionsByDescriptionParams) ([]Action, error) {
 	rows, err := q.db.QueryContext(ctx, searchActionsByDescription, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []SearchActionsByDescriptionRow{}
+	items := []Action{}
 	for rows.Next() {
-		var i SearchActionsByDescriptionRow
+		var i Action
 		if err := rows.Scan(
 			&i.ID,
 			&i.PersonID,
@@ -611,7 +512,7 @@ const updateAction = `-- name: UpdateAction :one
 UPDATE action
 SET person_id = x2b($2), occurred_at = $3, description = $4, "references" = $5, valence = $6, updated_at = NOW()
 WHERE id = x2b($1)
-RETURNING b2x(id) as id, b2x(person_id) as person_id, occurred_at, description, "references", valence, created_at, updated_at
+RETURNING id, person_id, occurred_at, description, "references", valence, created_at, updated_at
 `
 
 type UpdateActionParams struct {
@@ -623,18 +524,7 @@ type UpdateActionParams struct {
 	Valence     ValenceType    `db:"valence" json:"valence"`
 }
 
-type UpdateActionRow struct {
-	ID          string         `db:"id" json:"id"`
-	PersonID    string         `db:"person_id" json:"person_id"`
-	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
-	Description string         `db:"description" json:"description"`
-	References  sql.NullString `db:"references" json:"references"`
-	Valence     ValenceType    `db:"valence" json:"valence"`
-	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) UpdateAction(ctx context.Context, arg UpdateActionParams) (UpdateActionRow, error) {
+func (q *Queries) UpdateAction(ctx context.Context, arg UpdateActionParams) (Action, error) {
 	row := q.db.QueryRowContext(ctx, updateAction,
 		arg.XidStr,
 		arg.XidStr_2,
@@ -643,7 +533,7 @@ func (q *Queries) UpdateAction(ctx context.Context, arg UpdateActionParams) (Upd
 		arg.References,
 		arg.Valence,
 	)
-	var i UpdateActionRow
+	var i Action
 	err := row.Scan(
 		&i.ID,
 		&i.PersonID,

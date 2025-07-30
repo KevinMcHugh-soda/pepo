@@ -9,6 +9,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	xidb "github.com/rs/xid/b"
 )
 
 type ValenceType string
@@ -70,8 +72,8 @@ func AllValenceTypeValues() []ValenceType {
 }
 
 type Action struct {
-	ID          []byte         `db:"id" json:"id"`
-	PersonID    []byte         `db:"person_id" json:"person_id"`
+	ID          xidb.ID        `db:"id" json:"id"`
+	PersonID    xidb.ID        `db:"person_id" json:"person_id"`
 	OccurredAt  time.Time      `db:"occurred_at" json:"occurred_at"`
 	Description string         `db:"description" json:"description"`
 	References  sql.NullString `db:"references" json:"references"`
@@ -81,7 +83,7 @@ type Action struct {
 }
 
 type Person struct {
-	ID        []byte    `db:"id" json:"id"`
+	ID        xidb.ID   `db:"id" json:"id"`
 	Name      string    `db:"name" json:"name"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`

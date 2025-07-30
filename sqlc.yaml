@@ -22,11 +22,12 @@ sql:
         emit_enum_valid_method: true
         emit_all_enum_values: true
         overrides:
-          - db_type: "text"
-            go_type: "string"
-          - db_type: "varchar"
-            go_type: "string"
-          - db_type: "uuid"
-            go_type: "github.com/google/uuid.UUID"
-          - db_type: "timestamptz"
-            go_type: "time.Time"
+          - column: "person.id"
+            go_type: &xid
+              import: "github.com/rs/xid/b"
+              package: "xidb"
+              type: "ID"
+          - column: "action.id"
+            go_type: *xid
+          - column: "action.person_id"
+            go_type: *xid
