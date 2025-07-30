@@ -45,7 +45,6 @@ logs/
 
 # Generated code
 internal/api/
-internal/db/
 *_templ.go
 
 # Temporary files
