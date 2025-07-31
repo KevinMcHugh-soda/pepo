@@ -1,4 +1,4 @@
-.PHONY: help build build-release version run test clean setup migrate migrate-up migrate-down migrate-status generate generate-api generate-db dev docker-up docker-down
+.PHONY: help build build-release version run test clean setup migrate migrate-up migrate-down migrate-status generate generate-api generate-db dev docker-up docker-down psql
 
 # Default target
 help:
@@ -24,6 +24,7 @@ help:
 	@echo "  dev           - Start development environment"
 	@echo "  docker-up     - Start PostgreSQL with Docker"
 	@echo "  docker-down   - Stop PostgreSQL Docker container"
+	@echo "  psql          - Open psql session to database"
 
 # Go variables
 GOBASE=$(shell pwd)
@@ -191,3 +192,8 @@ dropdb:
 # Reset database (drop, create, migrate)
 resetdb: dropdb createdb migrate
 	@echo "Database reset complete!"
+
+# Open psql session to database
+psql:
+	@echo "Opening psql session..."
+	psql postgres://postgres:password@localhost:5433/pepo_dev
