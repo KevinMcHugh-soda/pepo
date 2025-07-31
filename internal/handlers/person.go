@@ -99,7 +99,7 @@ func (h *PersonHandler) GetPersons(ctx context.Context, params api.GetPersonsPar
 	if err != nil {
 		log.Printf("Error counting persons: %v", err)
 		return &api.Error{
-			Message: "Failed to count persons",
+			Message: "Failed to count people",
 			Code:    "INTERNAL_ERROR",
 		}, nil
 	}
@@ -112,7 +112,7 @@ func (h *PersonHandler) GetPersons(ctx context.Context, params api.GetPersonsPar
 	if err != nil {
 		log.Printf("Error listing persons: %v", err)
 		return &api.Error{
-			Message: "Failed to list persons",
+			Message: "Failed to list people",
 			Code:    "INTERNAL_ERROR",
 		}, nil
 	}

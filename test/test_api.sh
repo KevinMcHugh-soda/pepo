@@ -129,17 +129,17 @@ test_create_person() {
 }
 
 test_list_persons() {
-    print_status "Testing list persons..."
+    print_status "Testing list people..."
     response=$(curl -s -w "%{http_code}" "$API_URL/persons")
 
     http_code="${response: -3}"
     body="${response%???}"
 
     if [ "$http_code" = "200" ]; then
-        print_success "List persons successful"
+        print_success "List people successful"
         echo "Response: $body"
     else
-        print_error "Failed to list persons (HTTP $http_code)"
+        print_error "Failed to list people (HTTP $http_code)"
         echo "Response: $body"
         return 1
     fi

@@ -17,16 +17,9 @@ templ PersonItem(person Person) {
 				<span class="text-sm text-gray-500 ml-2">ID: { person.ID }</span>
 			</div>
 			<div class="space-x-2">
+				<!-- Edit functionality to be implemented with consolidated API -->
 				<button
-					hx-get={ "/forms/persons/" + person.ID + "/edit" }
-					hx-target={ "#person-" + person.ID }
-					hx-swap="outerHTML"
-					class="text-blue-500 hover:text-blue-700 text-sm"
-				>
-					Edit
-				</button>
-				<button
-					hx-delete={ "/forms/persons/delete/" + person.ID }
+					hx-delete={ "/api/v1/persons/" + person.ID }
 					hx-target={ "#person-" + person.ID }
 					hx-swap="outerHTML"
 					hx-confirm="Are you sure you want to delete this person?"
@@ -60,9 +53,9 @@ templ PersonSelectOptions(persons []Person) {
 }
 
 templ PersonSelectError() {
-	<option value="">Error loading persons</option>
+	<option value="">Error loading people</option>
 }
 
 templ PersonSelectLoading() {
-	<option value="">Loading persons...</option>
+	<option value="">Loading people...</option>
 }

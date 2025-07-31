@@ -10,6 +10,7 @@ import (
 	"github.com/a-h/templ"
 
 	"pepo/internal/api"
+	"pepo/internal/middleware"
 	"pepo/templates"
 )
 
@@ -28,10 +29,27 @@ func NewContentNegotiatingHandler(combinedHandler *CombinedAPIHandler) *ContentN
 // determineResponseType checks Accept header and returns preferred content type
 func (h *ContentNegotiatingHandler) determineResponseType(r *http.Request) string {
 	accept := r.Header.Get("Accept")
+	// Check for explicit HTML preference
 	if strings.Contains(accept, "text/html") {
 		return "text/html"
 	}
+	// Check for HTMX requests (they typically want HTML)
+	if r.Header.Get("HX-Request") == "true" {
+		return "text/html"
+	}
 	return "application/json"
+}
+
+// getRequestFromContext safely extracts HTTP request from context
+func (h *ContentNegotiatingHandler) getRequestFromContext(ctx context.Context) *http.Request {
+	if req, ok := ctx.Value(middleware.HTTPRequestKey).(*http.Request); ok {
+		return req
+	}
+	// Fallback: try other context keys
+	if req, ok := ctx.Value("http_request").(*http.Request); ok {
+		return req
+	}
+	return nil
 }
 
 // renderTemplate renders a template to an io.Reader
@@ -41,7 +59,7 @@ func renderTemplate(component templ.Component) io.Reader {
 	return &buf
 }
 
-// GetPersons handles both JSON and HTML requests for listing persons
+// GetPersons handles both JSON and HTML requests for listing people
 func (h *ContentNegotiatingHandler) GetPersons(ctx context.Context, params api.GetPersonsParams) (api.GetPersonsRes, error) {
 	// Call the business logic
 	result, err := h.combinedHandler.GetPersons(ctx, params)
@@ -50,14 +68,14 @@ func (h *ContentNegotiatingHandler) GetPersons(ctx context.Context, params api.G
 	}
 
 	// Check if we have request context to determine response type
-	if req, ok := ctx.Value("http_request").(*http.Request); ok {
+	if req := h.getRequestFromContext(ctx); req != nil {
 		responseType := h.determineResponseType(req)
 
 		if responseType == "text/html" {
 			// Handle HTML response
 			switch jsonResult := result.(type) {
 			case *api.GetPersonsOKApplicationJSON:
-				// Convert API persons to template persons
+				// Convert API persons to template people
 				templatePersons := make([]templates.Person, len(jsonResult.Persons))
 				for i, person := range jsonResult.Persons {
 					templatePersons[i] = templates.Person{
@@ -68,7 +86,15 @@ func (h *ContentNegotiatingHandler) GetPersons(ctx context.Context, params api.G
 					}
 				}
 
-				// Render template and return HTML response
+				// Check if this is a request for select options format
+				if req.URL.Query().Get("format") == "select" {
+					// Render select options template
+					return &api.GetPersonsOKTextHTML{
+						Data: renderTemplate(templates.PersonSelectOptions(templatePersons)),
+					}, nil
+				}
+
+				// Render regular person list template
 				return &api.GetPersonsOKTextHTML{
 					Data: renderTemplate(templates.PersonList(templatePersons)),
 				}, nil
@@ -89,7 +115,7 @@ func (h *ContentNegotiatingHandler) GetPersonById(ctx context.Context, params ap
 	}
 
 	// Check if we have request context to determine response type
-	if req, ok := ctx.Value("http_request").(*http.Request); ok {
+	if req := h.getRequestFromContext(ctx); req != nil {
 		responseType := h.determineResponseType(req)
 
 		if responseType == "text/html" {
@@ -125,7 +151,7 @@ func (h *ContentNegotiatingHandler) CreatePerson(ctx context.Context, req *api.C
 	}
 
 	// Check if we have request context to determine response type
-	if httpReq, ok := ctx.Value("http_request").(*http.Request); ok {
+	if httpReq := h.getRequestFromContext(ctx); httpReq != nil {
 		responseType := h.determineResponseType(httpReq)
 
 		if responseType == "text/html" {
@@ -161,7 +187,7 @@ func (h *ContentNegotiatingHandler) UpdatePerson(ctx context.Context, req *api.U
 	}
 
 	// Check if we have request context to determine response type
-	if httpReq, ok := ctx.Value("http_request").(*http.Request); ok {
+	if httpReq := h.getRequestFromContext(ctx); httpReq != nil {
 		responseType := h.determineResponseType(httpReq)
 
 		if responseType == "text/html" {
@@ -202,7 +228,7 @@ func (h *ContentNegotiatingHandler) GetActions(ctx context.Context, params api.G
 	}
 
 	// Check if we have request context to determine response type
-	if req, ok := ctx.Value("http_request").(*http.Request); ok {
+	if req := h.getRequestFromContext(ctx); req != nil {
 		responseType := h.determineResponseType(req)
 
 		if responseType == "text/html" {
@@ -245,7 +271,7 @@ func (h *ContentNegotiatingHandler) GetActionById(ctx context.Context, params ap
 	}
 
 	// Check if we have request context to determine response type
-	if req, ok := ctx.Value("http_request").(*http.Request); ok {
+	if req := h.getRequestFromContext(ctx); req != nil {
 		responseType := h.determineResponseType(req)
 
 		if responseType == "text/html" {
@@ -285,7 +311,7 @@ func (h *ContentNegotiatingHandler) CreateAction(ctx context.Context, req *api.C
 	}
 
 	// Check if we have request context to determine response type
-	if httpReq, ok := ctx.Value("http_request").(*http.Request); ok {
+	if httpReq := h.getRequestFromContext(ctx); httpReq != nil {
 		responseType := h.determineResponseType(httpReq)
 
 		if responseType == "text/html" {
@@ -325,7 +351,7 @@ func (h *ContentNegotiatingHandler) UpdateAction(ctx context.Context, req *api.U
 	}
 
 	// Check if we have request context to determine response type
-	if httpReq, ok := ctx.Value("http_request").(*http.Request); ok {
+	if httpReq := h.getRequestFromContext(ctx); httpReq != nil {
 		responseType := h.determineResponseType(httpReq)
 
 		if responseType == "text/html" {
@@ -370,7 +396,7 @@ func (h *ContentNegotiatingHandler) GetPersonActions(ctx context.Context, params
 	}
 
 	// Check if we have request context to determine response type
-	if req, ok := ctx.Value("http_request").(*http.Request); ok {
+	if req := h.getRequestFromContext(ctx); req != nil {
 		responseType := h.determineResponseType(req)
 
 		if responseType == "text/html" {

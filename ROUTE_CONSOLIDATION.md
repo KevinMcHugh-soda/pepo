@@ -214,7 +214,7 @@ This script tests:
 - JSON responses with `Accept: application/json`
 - HTML responses with `Accept: text/html`
 - Default behavior (no Accept header)
-- All CRUD operations for persons and actions
+- All CRUD operations for people and actions
 - Error responses in both formats
 
 ## Configuration

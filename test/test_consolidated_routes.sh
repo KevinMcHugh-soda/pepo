@@ -144,7 +144,7 @@ run_tests() {
     log_info "Starting consolidated routes and content negotiation tests..."
     echo ""
 
-    # Test 1: List persons (GET /persons)
+    # Test 1: List people (GET /persons)
     test_both_routes "GET" "/persons" "List persons"
 
     # Test 2: Create person (POST /persons)
@@ -315,7 +315,7 @@ main() {
     log_info "Summary:"
     log_info "  ✓ Content negotiation working (JSON/HTML responses)"
     log_info "  ✓ API routes functional (/api/v1/*)"
-    log_info "  ✓ CRUD operations for persons and actions"
+    log_info "  ✓ CRUD operations for people and actions"
     log_info "  ✓ Default content type is JSON"
 
     echo ""

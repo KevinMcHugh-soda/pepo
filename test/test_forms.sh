@@ -93,13 +93,13 @@ trap cleanup EXIT
 
 # Test functions
 test_list_persons_form() {
-    print_status "Testing list persons form endpoint..."
+    print_status "Testing list people form endpoint..."
     response=$(curl -s -w "%{http_code}" "$FORMS_URL/persons/list")
     http_code="${response: -3}"
     body="${response%???}"
 
     if [ "$http_code" = "200" ]; then
-        print_success "List persons form endpoint works"
+        print_success "List people form endpoint works"
         echo "Response length: ${#body} characters"
 
         # Check if it's HTML
@@ -110,7 +110,7 @@ test_list_persons_form() {
             echo "First 200 chars: ${body:0:200}"
         fi
     else
-        print_error "List persons form endpoint failed (HTTP $http_code)"
+        print_error "List people form endpoint failed (HTTP $http_code)"
         echo "Response: $body"
         return 1
     fi

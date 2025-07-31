@@ -48,7 +48,7 @@ templ ActionItem(action Action) {
 			</div>
 			<div class="space-x-2 ml-4">
 				<button
-					hx-delete={ "/forms/actions/delete/" + action.ID }
+					hx-delete={ "/api/v1/actions/" + action.ID }
 					hx-target={ "#action-" + action.ID }
 					hx-swap="outerHTML"
 					hx-confirm="Are you sure you want to delete this action?"

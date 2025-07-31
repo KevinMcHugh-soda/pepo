@@ -41,6 +41,7 @@ func New(cfg *config.Config, apiHandler *handlers.CombinedAPIHandler, personHand
 	// Wrap with middleware
 	handler := middleware.Chain(mux,
 		middleware.AddRequestToContext,
+		middleware.FormToJSONMiddleware,
 		middleware.RecoveryMiddleware,
 		middleware.LoggingMiddleware,
 		middleware.SecurityHeadersMiddleware,

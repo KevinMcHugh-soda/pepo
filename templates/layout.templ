@@ -10,6 +10,14 @@ templ Layout(title string) {
 			<script src="https://unpkg.com/htmx.org@1.9.8"></script>
 			<script src="https://unpkg.com/htmx.org@1.9.8/dist/ext/json-enc.js"></script>
 			<script src="https://cdn.tailwindcss.com"></script>
+			<script>
+				// Configure HTMX to send Accept: text/html header by default
+				document.addEventListener('DOMContentLoaded', function() {
+					htmx.config.defaultHeaders = {
+						'Accept': 'text/html'
+					};
+				});
+			</script>
 		</head>
 		<body class="bg-gray-100">
 			<div class="container mx-auto px-4 py-8">
