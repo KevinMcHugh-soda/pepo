@@ -55,7 +55,7 @@ func (f *FormToJSONAdapter) convertFormToJSON(r *http.Request) ([]byte, error) {
 	}
 
 	// Determine the type of form based on URL path
-	if strings.Contains(r.URL.Path, "/persons") {
+	if strings.Contains(r.URL.Path, "/people") {
 		return f.convertPersonForm(r)
 	} else if strings.Contains(r.URL.Path, "/actions") {
 		return f.convertActionForm(r)

@@ -12,17 +12,17 @@ Previously, the application had separate routes for JSON and HTML responses:
 
 ```
 # JSON API routes
-GET  /api/v1/persons          → JSON response
-POST /api/v1/persons          → JSON response
-GET  /api/v1/persons/{id}     → JSON response
-PUT  /api/v1/persons/{id}     → JSON response
-DELETE /api/v1/persons/{id}   → 204 No Content
+GET  /api/v1/people          → JSON response
+POST /api/v1/people          → JSON response
+GET  /api/v1/people/{id}     → JSON response
+PUT  /api/v1/people/{id}     → JSON response
+DELETE /api/v1/people/{id}   → 204 No Content
 
 # HTML Form routes (for HTMX)
-GET  /forms/persons/list      → HTML response
-POST /forms/persons/create    → HTML response
-DELETE /forms/persons/delete/{id} → HTML response
-GET  /forms/persons/select    → HTML response
+GET  /forms/people/list      → HTML response
+POST /forms/people/create    → HTML response
+DELETE /forms/people/delete/{id} → HTML response
+GET  /forms/people/select    → HTML response
 ```
 
 ### After: Consolidated Routes with Content Negotiation
@@ -31,15 +31,15 @@ Now, the same endpoints serve both content types:
 
 ```
 # Consolidated routes supporting both JSON and HTML
-GET  /api/v1/persons          → JSON or HTML (based on Accept header)
-POST /api/v1/persons          → JSON or HTML (based on Accept header)
-GET  /api/v1/persons/{id}     → JSON or HTML (based on Accept header)
-PUT  /api/v1/persons/{id}     → JSON or HTML (based on Accept header)
-DELETE /api/v1/persons/{id}   → 204 No Content
+GET  /api/v1/people          → JSON or HTML (based on Accept header)
+POST /api/v1/people          → JSON or HTML (based on Accept header)
+GET  /api/v1/people/{id}     → JSON or HTML (based on Accept header)
+PUT  /api/v1/people/{id}     → JSON or HTML (based on Accept header)
+DELETE /api/v1/people/{id}   → 204 No Content
 
 # Convenience routes (optional, same functionality)
-GET  /persons          → JSON or HTML (based on Accept header)
-POST /persons          → JSON or HTML (based on Accept header)
+GET  /people          → JSON or HTML (based on Accept header)
+POST /people          → JSON or HTML (based on Accept header)
 # ... etc
 ```
 
@@ -57,7 +57,7 @@ The server examines the `Accept` header in the HTTP request:
 
 #### JSON Request
 ```bash
-curl -H "Accept: application/json" http://localhost:8000/api/v1/persons
+curl -H "Accept: application/json" http://localhost:8000/api/v1/people
 ```
 Response:
 ```json
@@ -76,7 +76,7 @@ Response:
 
 #### HTML Request
 ```bash
-curl -H "Accept: text/html" http://localhost:8000/api/v1/persons
+curl -H "Accept: text/html" http://localhost:8000/api/v1/people
 ```
 Response:
 ```html
@@ -158,7 +158,7 @@ Update requests to use the consolidated endpoints:
 #### Before:
 ```javascript
 // HTMX
-<form hx-post="/forms/persons/create" hx-target="#person-list">
+<form hx-post="/forms/people/create" hx-target="#person-list">
   <input name="name" type="text" required>
   <button type="submit">Create Person</button>
 </form>
@@ -167,7 +167,7 @@ Update requests to use the consolidated endpoints:
 #### After:
 ```javascript
 // HTMX with Accept header
-<form hx-post="/api/v1/persons" 
+<form hx-post="/api/v1/people" 
       hx-headers='{"Accept": "text/html"}' 
       hx-target="#person-list">
   <input name="name" type="text" required>
@@ -181,7 +181,7 @@ Use the convenience routes for cleaner URLs:
 
 ```javascript
 // Even cleaner
-<form hx-post="/persons" 
+<form hx-post="/people" 
       hx-headers='{"Accept": "text/html"}' 
       hx-target="#person-list">
   <input name="name" type="text" required>
@@ -193,9 +193,9 @@ Use the convenience routes for cleaner URLs:
 
 The old `/forms/*` routes are still available but marked as deprecated:
 
-- `/forms/persons/create` → Use `POST /persons` with `Accept: text/html`
-- `/forms/persons/list` → Use `GET /persons` with `Accept: text/html`
-- `/forms/persons/delete/{id}` → Use `DELETE /persons/{id}`
+- `/forms/people/create` → Use `POST /people` with `Accept: text/html`
+- `/forms/people/list` → Use `GET /people` with `Accept: text/html`
+- `/forms/people/delete/{id}` → Use `DELETE /people/{id}`
 - `/forms/actions/create` → Use `POST /actions` with `Accept: text/html`
 - `/forms/actions/list` → Use `GET /actions` with `Accept: text/html`
 - `/forms/actions/delete/{id}` → Use `DELETE /actions/{id}`

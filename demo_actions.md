@@ -40,7 +40,7 @@ CREATE TYPE valence_type AS ENUM ('positive', 'negative');
 - `DELETE /api/v1/actions/{id}` - Delete action
 
 ### Person-specific Actions
-- `GET /api/v1/persons/{id}/actions` - Get all actions for a person
+- `GET /api/v1/people/{id}/actions` - Get all actions for a person
 
 ### Query Parameters
 - `limit` - Number of results (default: 20, max: 100)
@@ -52,7 +52,7 @@ CREATE TYPE valence_type AS ENUM ('positive', 'negative');
 
 ### 1. Create a Person
 ```bash
-curl -X POST http://localhost:8080/api/v1/persons \
+curl -X POST http://localhost:8080/api/v1/people \
   -H "Content-Type: application/json" \
   -d '{"name": "John Doe"}'
 ```
@@ -112,7 +112,7 @@ curl http://localhost:8080/api/v1/actions
 
 ### 5. Filter Actions by Person
 ```bash
-curl "http://localhost:8080/api/v1/persons/d258ifuv0le41h0toplg/actions"
+curl "http://localhost:8080/api/v1/people/d258ifuv0le41h0toplg/actions"
 ```
 
 ### 6. Filter Actions by Valence

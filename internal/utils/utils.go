@@ -39,7 +39,7 @@ func (StringUtils) TitleCase(s string) string {
 // HTTPUtils contains HTTP utility functions
 type HTTPUtils struct{}
 
-// ExtractIDFromPath extracts an ID from a URL path like "/forms/persons/delete/123"
+// ExtractIDFromPath extracts an ID from a URL path like "/forms/people/delete/123"
 func (HTTPUtils) ExtractIDFromPath(urlPath, prefix string) (string, error) {
 	if !strings.HasPrefix(urlPath, prefix) {
 		return "", fmt.Errorf("path does not start with prefix %s", prefix)

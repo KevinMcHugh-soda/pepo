@@ -13,7 +13,7 @@ templ Index() {
 						id="person-select"
 						required
 						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-						hx-get="/api/v1/persons?format=select"
+						hx-get="/api/v1/people?format=select"
 						hx-trigger="load"
 						hx-target="#person-select"
 						hx-swap="innerHTML"
@@ -87,7 +87,7 @@ templ Index() {
 			<!-- Add Person Form (smaller, moved down) -->
 			<div class="bg-white rounded-lg shadow p-4">
 				<h3 class="text-lg font-semibold mb-3">Add New Person</h3>
-				<form hx-post="/api/v1/persons" hx-target="#persons-list" hx-swap="afterbegin" class="space-y-3">
+				<form hx-post="/api/v1/people" hx-target="#persons-list" hx-swap="afterbegin" class="space-y-3">
 					<input
 						type="text"
 						name="name"
@@ -106,7 +106,7 @@ templ Index() {
 			<!-- People List -->
 			<div class="bg-white rounded-lg shadow p-4">
 				<h3 class="text-lg font-semibold mb-3">People</h3>
-				<div id="persons-list" hx-get="/api/v1/persons" hx-trigger="load">
+				<div id="persons-list" hx-get="/api/v1/people" hx-trigger="load">
 					<p class="text-gray-500">Loading...</p>
 				</div>
 			</div>

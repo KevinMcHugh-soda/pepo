@@ -50,7 +50,7 @@ test_html_terminology() {
     log_test "Testing HTML responses use 'people' terminology..."
 
     # Get HTML response for persons list
-    response=$(curl -s -H "Accept: text/html" "$API_BASE_URL/persons" -o /tmp/people_html.txt -w "%{http_code}")
+    response=$(curl -s -H "Accept: text/html" "$API_BASE_URL/people" -o /tmp/people_html.txt -w "%{http_code}")
     status="${response: -3}"
 
     if [[ "$status" == "200" ]]; then

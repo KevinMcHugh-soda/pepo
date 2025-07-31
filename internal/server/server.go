@@ -126,14 +126,14 @@ func setupRoutes(apiServer *api.Server, personHandler *handlers.PersonHandler, a
 	mux.HandleFunc("/", handleRootPage)
 
 	// Legacy form handlers for HTMX compatibility (keeping for now)
-	mux.HandleFunc("/forms/persons/select", personHandler.HandleGetPersonsForSelect)
+	mux.HandleFunc("/forms/people/select", personHandler.HandleGetPersonsForSelect)
 
 	// Consolidated API routes with content negotiation (supports both JSON and HTML)
 	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiServer))
 
 	// Convenience routes that serve the same endpoints without /api/v1 prefix
-	mux.Handle("/persons/", createConvenienceHandler(apiServer, "/persons"))
-	mux.Handle("/persons", createConvenienceHandler(apiServer, "/persons"))
+	mux.Handle("/people/", createConvenienceHandler(apiServer, "/people"))
+	mux.Handle("/people", createConvenienceHandler(apiServer, "/people"))
 	mux.Handle("/actions/", createConvenienceHandler(apiServer, "/actions"))
 	mux.Handle("/actions", createConvenienceHandler(apiServer, "/actions"))
 

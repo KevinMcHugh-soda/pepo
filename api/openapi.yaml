@@ -12,7 +12,7 @@ servers:
     description: Development server
 
 paths:
-  /persons:
+  /people:
     get:
       summary: Get all persons
       operationId: getPersons
@@ -98,7 +98,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /persons/{id}:
+  /people/{id}:
     get:
       summary: Get a person by ID
       operationId: getPersonById
@@ -426,7 +426,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /persons/{id}/actions:
+  /people/{id}/actions:
     get:
       summary: Get actions for a specific person
       operationId: getPersonActions

@@ -31,10 +31,10 @@ make run
 **Alternative quick check**:
 ```bash
 # Test HTML response
-curl -H "Accept: text/html" http://localhost:8000/api/v1/persons
+curl -H "Accept: text/html" http://localhost:8000/api/v1/people
 
 # Test JSON response  
-curl -H "Accept: application/json" http://localhost:8000/api/v1/persons
+curl -H "Accept: application/json" http://localhost:8000/api/v1/people
 ```
 
 Both should return the same data in different formats! 🎉
@@ -62,31 +62,31 @@ Both should return the same data in different formats! 🎉
 ### Before: Duplicate Routes
 ```
 # JSON Routes
-GET  /api/v1/persons          → PersonHandler.ListPersons()
-POST /api/v1/persons          → PersonHandler.CreatePerson()
-GET  /api/v1/persons/{id}     → PersonHandler.GetPerson()
-PUT  /api/v1/persons/{id}     → PersonHandler.UpdatePerson()
-DELETE /api/v1/persons/{id}   → PersonHandler.DeletePerson()
+GET  /api/v1/people          → PersonHandler.ListPersons()
+POST /api/v1/people          → PersonHandler.CreatePerson()
+GET  /api/v1/people/{id}     → PersonHandler.GetPerson()
+PUT  /api/v1/people/{id}     → PersonHandler.UpdatePerson()
+DELETE /api/v1/people/{id}   → PersonHandler.DeletePerson()
 
 # HTML Routes (Separate Handlers)
-GET  /forms/persons/list      → PersonHandler.HandleListPersonsHTML()
-POST /forms/persons/create    → PersonHandler.HandleCreatePersonForm()
-DELETE /forms/persons/delete/{id} → PersonHandler.HandleDeletePersonForm()
-GET  /forms/persons/select    → PersonHandler.HandleGetPersonsForSelect()
+GET  /forms/people/list      → PersonHandler.HandleListPersonsHTML()
+POST /forms/people/create    → PersonHandler.HandleCreatePersonForm()
+DELETE /forms/people/delete/{id} → PersonHandler.HandleDeletePersonForm()
+GET  /forms/people/select    → PersonHandler.HandleGetPersonsForSelect()
 ```
 
 ### After: Consolidated Routes
 ```
 # Unified Routes (Content Negotiation)
-GET  /api/v1/persons          → JSON or HTML (based on Accept header)
-POST /api/v1/persons          → JSON or HTML (based on Accept header)  
-GET  /api/v1/persons/{id}     → JSON or HTML (based on Accept header)
-PUT  /api/v1/persons/{id}     → JSON or HTML (based on Accept header)
-DELETE /api/v1/persons/{id}   → 204 No Content
+GET  /api/v1/people          → JSON or HTML (based on Accept header)
+POST /api/v1/people          → JSON or HTML (based on Accept header)  
+GET  /api/v1/people/{id}     → JSON or HTML (based on Accept header)
+PUT  /api/v1/people/{id}     → JSON or HTML (based on Accept header)
+DELETE /api/v1/people/{id}   → 204 No Content
 
 # Convenience Routes (Optional)
-GET  /persons                 → Same as /api/v1/persons
-POST /persons                 → Same as /api/v1/persons
+GET  /people                 → Same as /api/v1/people
+POST /people                 → Same as /api/v1/people
 ```
 
 ---
@@ -135,22 +135,22 @@ POST /persons                 → Same as /api/v1/persons
 ### For API Clients (JSON)
 ```bash
 # Same as before - no changes needed
-curl -H "Accept: application/json" http://localhost:8000/api/v1/persons
+curl -H "Accept: application/json" http://localhost:8000/api/v1/people
 ```
 
 ### For Web Browsers (HTML)
 ```bash
 # Explicit HTML request
-curl -H "Accept: text/html" http://localhost:8000/api/v1/persons
+curl -H "Accept: text/html" http://localhost:8000/api/v1/people
 
 # HTMX automatically sends text/html
-<div hx-get="/api/v1/persons">Load persons</div>
+<div hx-get="/api/v1/people">Load persons</div>
 ```
 
 ### For HTML Forms
 ```html
 <!-- Forms now submit to consolidated endpoints -->
-<form hx-post="/api/v1/persons" hx-target="#person-list">
+<form hx-post="/api/v1/people" hx-target="#person-list">
   <input name="name" type="text" required>
   <button type="submit">Create Person</button>
 </form>
@@ -159,7 +159,7 @@ curl -H "Accept: text/html" http://localhost:8000/api/v1/persons
 ### For Select Options
 ```html
 <!-- Special format for dropdowns -->
-<select hx-get="/api/v1/persons?format=select" hx-trigger="load">
+<select hx-get="/api/v1/people?format=select" hx-trigger="load">
   <option>Loading...</option>
 </select>
 ```

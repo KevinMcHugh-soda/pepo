@@ -187,11 +187,11 @@ The API is defined in `api/openapi.yaml` and follows OpenAPI 3.0 specification.
 
 **Key Endpoints:**
 - `GET /health` - Health check
-- `GET /api/v1/persons` - List people
-- `POST /api/v1/persons` - Create person
-- `GET /api/v1/persons/{id}` - Get person by ID
-- `PUT /api/v1/persons/{id}` - Update person
-- `DELETE /api/v1/persons/{id}` - Delete person
+- `GET /api/v1/people` - List people
+- `POST /api/v1/people` - Create person
+- `GET /api/v1/people/{id}` - Get person by ID
+- `PUT /api/v1/people/{id}` - Update person
+- `DELETE /api/v1/people/{id}` - Delete person
 
 ## Testing
 

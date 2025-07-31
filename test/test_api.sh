@@ -109,7 +109,7 @@ test_health() {
 
 test_create_person() {
     print_status "Testing create person..."
-    response=$(curl -s -w "%{http_code}" -X POST "$API_URL/persons" \
+    response=$(curl -s -w "%{http_code}" -X POST "$API_URL/people" \
         -H "Content-Type: application/json" \
         -d '{"name": "John Doe"}')
 
@@ -130,7 +130,7 @@ test_create_person() {
 
 test_list_persons() {
     print_status "Testing list people..."
-    response=$(curl -s -w "%{http_code}" "$API_URL/persons")
+    response=$(curl -s -w "%{http_code}" "$API_URL/people")
 
     http_code="${response: -3}"
     body="${response%???}"
@@ -152,7 +152,7 @@ test_get_person() {
     fi
 
     print_status "Testing get person by ID..."
-    response=$(curl -s -w "%{http_code}" "$API_URL/persons/$PERSON_ID")
+    response=$(curl -s -w "%{http_code}" "$API_URL/people/$PERSON_ID")
 
     http_code="${response: -3}"
     body="${response%???}"
@@ -174,7 +174,7 @@ test_update_person() {
     fi
 
     print_status "Testing update person..."
-    response=$(curl -s -w "%{http_code}" -X PUT "$API_URL/persons/$PERSON_ID" \
+    response=$(curl -s -w "%{http_code}" -X PUT "$API_URL/people/$PERSON_ID" \
         -H "Content-Type: application/json" \
         -d '{"name": "Jane Doe"}')
 
@@ -198,7 +198,7 @@ test_delete_person() {
     fi
 
     print_status "Testing delete person..."
-    response=$(curl -s -w "%{http_code}" -X DELETE "$API_URL/persons/$PERSON_ID")
+    response=$(curl -s -w "%{http_code}" -X DELETE "$API_URL/people/$PERSON_ID")
 
     http_code="${response: -3}"
 

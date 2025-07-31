@@ -94,7 +94,7 @@ trap cleanup EXIT
 # Test functions
 test_list_persons_form() {
     print_status "Testing list people form endpoint..."
-    response=$(curl -s -w "%{http_code}" "$FORMS_URL/persons/list")
+    response=$(curl -s -w "%{http_code}" "$FORMS_URL/people/list")
     http_code="${response: -3}"
     body="${response%???}"
 
@@ -121,7 +121,7 @@ test_create_person_form() {
     response=$(curl -s -w "%{http_code}" -X POST \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -d "name=Test User Form" \
-        "$FORMS_URL/persons/create")
+        "$FORMS_URL/people/create")
 
     http_code="${response: -3}"
     body="${response%???}"
@@ -155,7 +155,7 @@ test_create_person_form_empty_name() {
     response=$(curl -s -w "%{http_code}" -X POST \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -d "name=" \
-        "$FORMS_URL/persons/create")
+        "$FORMS_URL/people/create")
 
     http_code="${response: -3}"
     body="${response%???}"
@@ -182,7 +182,7 @@ test_delete_person_form() {
 
     print_status "Testing delete person form endpoint..."
     response=$(curl -s -w "%{http_code}" -X DELETE \
-        "$FORMS_URL/persons/delete/$PERSON_ID")
+        "$FORMS_URL/people/delete/$PERSON_ID")
 
     http_code="${response: -3}"
 
@@ -211,7 +211,7 @@ test_web_interface() {
         fi
 
         # Check for form endpoints
-        if echo "$body" | grep -q "/forms/persons"; then
+        if echo "$body" | grep -q "/forms/people"; then
             print_success "Form endpoints are referenced"
         else
             print_warning "Form endpoints might not be properly referenced"

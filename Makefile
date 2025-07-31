@@ -68,12 +68,12 @@ test:
 # Run API integration tests
 test-api: build
 	@echo "Running API integration tests..."
-	./test_api.sh
+	./test/test_api.sh
 
 # Run form integration tests
 test-forms: build
 	@echo "Running form integration tests..."
-	./test_forms.sh
+	./test/test_forms.sh
 
 # Clean build artifacts
 clean:

@@ -144,15 +144,15 @@ run_tests() {
     log_info "Starting consolidated routes and content negotiation tests..."
     echo ""
 
-    # Test 1: List people (GET /persons)
-    test_both_routes "GET" "/persons" "List persons"
+    # Test 1: List people (GET /people)
+    test_both_routes "GET" "/people" "List persons"
 
-    # Test 2: Create person (POST /persons)
+    # Test 2: Create person (POST /people)
     log_test "Testing Create person..."
     person_data='{"name":"Test Person for Consolidated Routes"}'
 
     # Test JSON creation
-    json_response=$(curl -s -X POST "$API_BASE_URL/persons" \
+    json_response=$(curl -s -X POST "$API_BASE_URL/people" \
         -H "Accept: application/json" \
         -H "Content-Type: application/json" \
         -d "$person_data" \
@@ -171,7 +171,7 @@ run_tests() {
     fi
 
     # Test HTML creation
-    html_response=$(curl -s -X POST "$API_BASE_URL/persons" \
+    html_response=$(curl -s -X POST "$API_BASE_URL/people" \
         -H "Accept: text/html" \
         -H "Content-Type: application/json" \
         -d "$person_data" \
@@ -188,15 +188,15 @@ run_tests() {
 
     echo ""
 
-    # Test 3: Get person by ID (GET /persons/{id})
+    # Test 3: Get person by ID (GET /people/{id})
     if [ -n "$PERSON_ID" ]; then
-        test_both_routes "GET" "/persons/$PERSON_ID" "Get person by ID"
+        test_both_routes "GET" "/people/$PERSON_ID" "Get person by ID"
     fi
 
-    # Test 4: Update person (PUT /persons/{id})
+    # Test 4: Update person (PUT /people/{id})
     if [ -n "$PERSON_ID" ]; then
         update_data='{"name":"Updated Test Person"}'
-        test_both_routes "PUT" "/persons/$PERSON_ID" "Update person" "$update_data"
+        test_both_routes "PUT" "/people/$PERSON_ID" "Update person" "$update_data"
     fi
 
     # Test 5: List actions (GET /actions)
@@ -255,16 +255,16 @@ run_tests() {
         test_both_routes "PUT" "/actions/$ACTION_ID" "Update action" "$update_action_data"
     fi
 
-    # Test 9: Get person's actions (GET /persons/{id}/actions)
+    # Test 9: Get person's actions (GET /people/{id}/actions)
     if [ -n "$PERSON_ID" ]; then
-        test_both_routes "GET" "/persons/$PERSON_ID/actions" "Get person's actions"
+        test_both_routes "GET" "/people/$PERSON_ID/actions" "Get person's actions"
     fi
 
     # Test 10: Content type preference
     log_test "Testing content type preference..."
 
     # Test that default (no Accept header) returns JSON
-    default_response=$(curl -s "$API_BASE_URL/persons" -w "%{http_code}" -o /tmp/default_response.txt)
+    default_response=$(curl -s "$API_BASE_URL/people" -w "%{http_code}" -o /tmp/default_response.txt)
     default_status="${default_response: -3}"
 
     if [[ "$default_status" == "200" ]]; then
@@ -292,7 +292,7 @@ cleanup() {
 
     if [ -n "$PERSON_ID" ]; then
         log_info "  Deleting test person: $PERSON_ID"
-        curl -s -X DELETE "$API_BASE_URL/persons/$PERSON_ID" > /dev/null 2>&1 || true
+        curl -s -X DELETE "$API_BASE_URL/people/$PERSON_ID" > /dev/null 2>&1 || true
     fi
 
     # Clean up temp files

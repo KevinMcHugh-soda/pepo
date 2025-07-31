@@ -111,7 +111,7 @@ main() {
     # Test 1: Create a person
     print_status "\n=== Testing Person Creation ==="
     person_data='{"name":"John Doe"}'
-    person_response=$(test_endpoint "POST" "/persons" "$person_data" "Create person")
+    person_response=$(test_endpoint "POST" "/people" "$person_data" "Create person")
     person_id=$(extract_id "$person_response")
 
     if [ -z "$person_id" ]; then
@@ -163,7 +163,7 @@ EOF
 
     # Test 6: Get actions for person
     print_status "\n=== Testing Get Person Actions ==="
-    test_endpoint "GET" "/persons/$person_id/actions" "" "Get actions for person"
+    test_endpoint "GET" "/people/$person_id/actions" "" "Get actions for person"
 
     # Test 7: Filter actions by valence
     print_status "\n=== Testing Filter Actions by Valence ==="
@@ -204,7 +204,7 @@ EOF
     # Test 12: Create person with same name (should work)
     print_status "\n=== Testing Duplicate Person Creation ==="
     person2_data='{"name":"Jane Smith"}'
-    person2_response=$(test_endpoint "POST" "/persons" "$person2_data" "Create second person")
+    person2_response=$(test_endpoint "POST" "/people" "$person2_data" "Create second person")
     person2_id=$(extract_id "$person2_response")
     print_status "Created second person with ID: $person2_id"
 
