@@ -76,21 +76,23 @@ templ PersonDetail(person Person, actions []Action) {
 				</div>
 			</div>
 		</div>
+		<!-- Record Action Form -->
+		@RecordActionForm(person.ID, "#actions-list")
 		<!-- Actions section -->
 		<div class="bg-white rounded-lg shadow p-6">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-xl font-semibold text-gray-900">Actions ({ len(actions) })</h2>
 				<a href="/" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm">
-					Add New Action
+					Back to Home
 				</a>
 			</div>
-			if len(actions) == 0 {
-				<div class="text-gray-500 text-center py-8">
-					<p class="mb-2">No actions recorded for { person.Name } yet.</p>
-					<a href="/" class="text-blue-600 hover:text-blue-800">Go back to add some actions</a>
-				</div>
-			} else {
-				<div class="space-y-4">
+			<div id="actions-list" class="space-y-4">
+				if len(actions) == 0 {
+					<div class="text-gray-500 text-center py-8" id="no-actions-message">
+						<p class="mb-2">No actions recorded for { person.Name } yet.</p>
+						<p class="text-sm">Use the form above to add the first action!</p>
+					</div>
+				} else {
 					for _, action := range actions {
 						<div class="border-b pb-4 last:border-b-0">
 							<div class="flex items-start justify-between">
@@ -126,8 +128,20 @@ templ PersonDetail(person Person, actions []Action) {
 							</div>
 						</div>
 					}
-				</div>
-			}
+				}
+			</div>
 		</div>
+		<!-- JavaScript to handle form interactions -->
+		<script>
+			document.addEventListener('htmx:afterRequest', function(event) {
+				// If an action was successfully added, remove the "no actions" message
+				if (event.detail.successful && event.target.closest('form') && event.target.closest('form').action.includes('/actions')) {
+					const noActionsMsg = document.getElementById('no-actions-message');
+					if (noActionsMsg) {
+						noActionsMsg.remove();
+					}
+				}
+			});
+		</script>
 	}
 }

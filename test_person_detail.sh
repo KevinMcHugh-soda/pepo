@@ -184,6 +184,126 @@ test_person_detail_html() {
     fi
 }
 
+# Test record action form on person detail page
+test_record_action_form() {
+    log_info "Testing record action form on person detail page..."
+
+    local response=$(curl -s -H "Accept: text/html" \
+        "$API_BASE_URL/people/$PERSON_ID" \
+        -w "%{http_code}")
+
+    local http_code="${response: -3}"
+    local body="${response%???}"
+
+    if [ "$http_code" = "200" ]; then
+        log_success "Person detail page loaded for form testing"
+
+        # Check if record action form exists
+        if echo "$body" | grep -q "Record New Action"; then
+            log_success "✓ Record action form found on page"
+        else
+            log_error "✗ Record action form not found on page"
+            return 1
+        fi
+
+        # Check if person_id is pre-filled in form
+        if echo "$body" | grep -q "name=\"person_id\"" && echo "$body" | grep -q "value=\"$PERSON_ID\""; then
+            log_success "✓ Person ID is pre-filled in form"
+        else
+            log_error "✗ Person ID not pre-filled in form"
+            return 1
+        fi
+
+        # Check form elements exist
+        if echo "$body" | grep -q "name=\"description\""; then
+            log_success "✓ Description field found"
+        else
+            log_error "✗ Description field not found"
+            return 1
+        fi
+
+        if echo "$body" | grep -q "name=\"valence\""; then
+            log_success "✓ Valence radio buttons found"
+        else
+            log_error "✗ Valence radio buttons not found"
+            return 1
+        fi
+
+        return 0
+    else
+        log_error "Failed to load person detail page for form testing. HTTP $http_code: $body"
+        return 1
+    fi
+}
+
+# Test submitting action via form
+test_submit_action_form() {
+    log_info "Testing action form submission..."
+
+    # Submit a new action via form data
+    local response=$(curl -s -X POST "$API_BASE_URL/actions" \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -H "Accept: text/html" \
+        -d "person_id=$PERSON_ID&description=Form+submitted+action&valence=positive&occurred_at=2024-01-20T15:30:00" \
+        -w "%{http_code}")
+
+    local http_code="${response: -3}"
+    local body="${response%???}"
+
+    if [ "$http_code" = "201" ]; then
+        log_success "Action form submission successful (HTTP 201)"
+
+        # Extract action ID if possible
+        if echo "$body" | grep -q "action-"; then
+            log_success "✓ Action HTML response contains action element"
+        else
+            log_warning "Action response may not contain expected HTML structure"
+        fi
+
+        return 0
+    else
+        log_error "Action form submission failed. HTTP $http_code: $body"
+        return 1
+    fi
+}
+
+# Test person detail page after adding action via form
+test_updated_person_detail() {
+    log_info "Testing person detail page after form submission..."
+
+    local response=$(curl -s -H "Accept: text/html" \
+        "$API_BASE_URL/people/$PERSON_ID" \
+        -w "%{http_code}")
+
+    local http_code="${response: -3}"
+    local body="${response%???}"
+
+    if [ "$http_code" = "200" ]; then
+        log_success "Updated person detail page loaded"
+
+        # Check that the new action appears
+        if echo "$body" | grep -q "Form submitted action"; then
+            log_success "✓ New action from form appears in person detail"
+        else
+            log_error "✗ New action from form not found in person detail"
+            return 1
+        fi
+
+        # Count total actions (should be 4: 3 original + 1 from form)
+        local action_count=$(echo "$body" | grep -o "action-" | wc -l)
+        if [ "$action_count" -ge 4 ]; then
+            log_success "✓ Action count increased after form submission"
+        else
+            log_warning "Action count may not have increased as expected"
+        fi
+
+        return 0
+    else
+        log_error "Failed to load updated person detail page. HTTP $http_code: $body"
+        return 1
+    fi
+}
+
 # Test person detail JSON view (should still work)
 test_person_detail_json() {
     log_info "Testing person detail JSON view..."
@@ -280,10 +400,13 @@ main() {
     create_test_person
     create_test_actions
     test_person_detail_html
+    test_record_action_form
+    test_submit_action_form
+    test_updated_person_detail
     test_person_detail_json
     test_home_page_links
 
-    log_success "All person detail view tests completed successfully!"
+    log_success "All person detail view and form tests completed successfully!"
 }
 
 # Run main function
