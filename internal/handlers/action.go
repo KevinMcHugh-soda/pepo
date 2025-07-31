@@ -78,11 +78,8 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 	// Generate new xid for the action
 	actionID := xid.New().String()
 
-	// Use current time if occurred_at is not provided
-	occurredAt := time.Now()
-	if req.OccurredAt.IsSet() {
-		occurredAt = req.OccurredAt.Value
-	}
+	// Use the provided occurred_at time
+	occurredAt := req.OccurredAt
 
 	// Create action in database
 	row, err := h.queries.CreateAction(ctx, db.CreateActionParams{
@@ -120,18 +117,18 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 	return apiAction, nil
 }
 
-func (h *ActionHandler) GetAction(ctx context.Context, params api.GetActionParams) (api.GetActionRes, error) {
+func (h *ActionHandler) GetActionById(ctx context.Context, params api.GetActionByIdParams) (api.GetActionByIdRes, error) {
 	row, err := h.queries.GetActionByID(ctx, params.ID)
 	action := row.Action
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &api.GetActionNotFound{
+			return &api.GetActionByIdNotFound{
 				Message: "Action not found",
 				Code:    "NOT_FOUND",
 			}, nil
 		}
 		log.Printf("Error getting action: %v", err)
-		return &api.GetActionInternalServerError{
+		return &api.GetActionByIdInternalServerError{
 			Message: "Failed to get action",
 			Code:    "INTERNAL_ERROR",
 		}, nil
@@ -154,8 +151,8 @@ func (h *ActionHandler) GetAction(ctx context.Context, params api.GetActionParam
 	return apiAction, nil
 }
 
-func (h *ActionHandler) ListActions(ctx context.Context, params api.ListActionsParams) (api.ListActionsRes, error) {
-	limit := int32(20)
+func (h *ActionHandler) GetActions(ctx context.Context, params api.GetActionsParams) (api.GetActionsRes, error) {
+	limit := int32(10)
 	if params.Limit.IsSet() {
 		limit = int32(params.Limit.Value)
 	}
@@ -240,7 +237,7 @@ func (h *ActionHandler) ListActions(ctx context.Context, params api.ListActionsP
 		}, nil
 	}
 
-	return &api.ListActionsOK{
+	return &api.GetActionsOKApplicationJSON{
 		Actions: apiActions,
 		Total:   int(total),
 	}, nil
@@ -370,7 +367,7 @@ func (h *ActionHandler) GetPersonActions(ctx context.Context, params api.GetPers
 		}, nil
 	}
 
-	return &api.GetPersonActionsOK{
+	return &api.GetPersonActionsOKApplicationJSON{
 		Actions: apiActions,
 		Total:   int(total),
 	}, nil
@@ -413,12 +410,9 @@ func (h *ActionHandler) HandleCreateActionForm(w http.ResponseWriter, r *http.Re
 	// Create API request
 	req := &api.CreateActionRequest{
 		PersonID:    personID,
+		OccurredAt:  occurredAt,
 		Description: description,
 		Valence:     api.CreateActionRequestValence(valence),
-	}
-
-	if occurredAtStr != "" {
-		req.OccurredAt = api.OptDateTime{Value: occurredAt, Set: true}
 	}
 
 	if references != "" {
@@ -447,12 +441,12 @@ func (h *ActionHandler) HandleCreateActionForm(w http.ResponseWriter, r *http.Re
 
 func (h *ActionHandler) HandleListActionsHTML(w http.ResponseWriter, r *http.Request) {
 	// Call the API handler internally
-	params := api.ListActionsParams{
+	params := api.GetActionsParams{
 		Limit:  api.OptInt{Value: 50, Set: true},
 		Offset: api.OptInt{Value: 0, Set: true},
 	}
 
-	result, err := h.ListActions(r.Context(), params)
+	result, err := h.GetActions(r.Context(), params)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		templates.ActionError("Failed to load actions").Render(r.Context(), w)
@@ -460,7 +454,7 @@ func (h *ActionHandler) HandleListActionsHTML(w http.ResponseWriter, r *http.Req
 	}
 
 	switch listResult := result.(type) {
-	case *api.ListActionsOK:
+	case *api.GetActionsOKApplicationJSON:
 		// Convert to template actions
 		templateActions := make([]templates.Action, len(listResult.Actions))
 		for i, action := range listResult.Actions {

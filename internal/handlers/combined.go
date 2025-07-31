@@ -25,12 +25,12 @@ func (h *CombinedAPIHandler) CreatePerson(ctx context.Context, req *api.CreatePe
 	return h.personHandler.CreatePerson(ctx, req)
 }
 
-func (h *CombinedAPIHandler) GetPerson(ctx context.Context, params api.GetPersonParams) (api.GetPersonRes, error) {
-	return h.personHandler.GetPerson(ctx, params)
+func (h *CombinedAPIHandler) GetPersonById(ctx context.Context, params api.GetPersonByIdParams) (api.GetPersonByIdRes, error) {
+	return h.personHandler.GetPersonById(ctx, params)
 }
 
-func (h *CombinedAPIHandler) ListPersons(ctx context.Context, params api.ListPersonsParams) (api.ListPersonsRes, error) {
-	return h.personHandler.ListPersons(ctx, params)
+func (h *CombinedAPIHandler) GetPersons(ctx context.Context, params api.GetPersonsParams) (api.GetPersonsRes, error) {
+	return h.personHandler.GetPersons(ctx, params)
 }
 
 func (h *CombinedAPIHandler) UpdatePerson(ctx context.Context, req *api.UpdatePersonRequest, params api.UpdatePersonParams) (api.UpdatePersonRes, error) {
@@ -46,12 +46,12 @@ func (h *CombinedAPIHandler) CreateAction(ctx context.Context, req *api.CreateAc
 	return h.actionHandler.CreateAction(ctx, req)
 }
 
-func (h *CombinedAPIHandler) GetAction(ctx context.Context, params api.GetActionParams) (api.GetActionRes, error) {
-	return h.actionHandler.GetAction(ctx, params)
+func (h *CombinedAPIHandler) GetActionById(ctx context.Context, params api.GetActionByIdParams) (api.GetActionByIdRes, error) {
+	return h.actionHandler.GetActionById(ctx, params)
 }
 
-func (h *CombinedAPIHandler) ListActions(ctx context.Context, params api.ListActionsParams) (api.ListActionsRes, error) {
-	return h.actionHandler.ListActions(ctx, params)
+func (h *CombinedAPIHandler) GetActions(ctx context.Context, params api.GetActionsParams) (api.GetActionsRes, error) {
+	return h.actionHandler.GetActions(ctx, params)
 }
 
 func (h *CombinedAPIHandler) UpdateAction(ctx context.Context, req *api.UpdateActionRequest, params api.UpdateActionParams) (api.UpdateActionRes, error) {

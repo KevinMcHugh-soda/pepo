@@ -60,17 +60,17 @@ func (h *PersonHandler) CreatePerson(ctx context.Context, req *api.CreatePersonR
 	}, nil
 }
 
-func (h *PersonHandler) GetPerson(ctx context.Context, params api.GetPersonParams) (api.GetPersonRes, error) {
+func (h *PersonHandler) GetPersonById(ctx context.Context, params api.GetPersonByIdParams) (api.GetPersonByIdRes, error) {
 	person, err := h.queries.GetPersonByID(ctx, params.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &api.GetPersonNotFound{
+			return &api.GetPersonByIdNotFound{
 				Message: "Person not found",
 				Code:    "NOT_FOUND",
 			}, nil
 		}
 		log.Printf("Error getting person: %v", err)
-		return &api.GetPersonInternalServerError{
+		return &api.GetPersonByIdInternalServerError{
 			Message: "Failed to get person",
 			Code:    "INTERNAL_ERROR",
 		}, nil
@@ -84,8 +84,8 @@ func (h *PersonHandler) GetPerson(ctx context.Context, params api.GetPersonParam
 	}, nil
 }
 
-func (h *PersonHandler) ListPersons(ctx context.Context, params api.ListPersonsParams) (api.ListPersonsRes, error) {
-	limit := int32(20)
+func (h *PersonHandler) GetPersons(ctx context.Context, params api.GetPersonsParams) (api.GetPersonsRes, error) {
+	limit := int32(10)
 	if params.Limit.IsSet() {
 		limit = int32(params.Limit.Value)
 	}
@@ -129,7 +129,7 @@ func (h *PersonHandler) ListPersons(ctx context.Context, params api.ListPersonsP
 		}
 	}
 
-	return &api.ListPersonsOK{
+	return &api.GetPersonsOKApplicationJSON{
 		Persons: apiPersons,
 		Total:   int(total),
 	}, nil
@@ -227,12 +227,12 @@ func (h *PersonHandler) HandleCreatePersonForm(w http.ResponseWriter, r *http.Re
 
 func (h *PersonHandler) HandleListPersonsHTML(w http.ResponseWriter, r *http.Request) {
 	// Call the API handler internally
-	params := api.ListPersonsParams{
+	params := api.GetPersonsParams{
 		Limit:  api.OptInt{Value: 50, Set: true},
 		Offset: api.OptInt{Value: 0, Set: true},
 	}
 
-	result, err := h.ListPersons(r.Context(), params)
+	result, err := h.GetPersons(r.Context(), params)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		templates.ActionError("Failed to load persons").Render(r.Context(), w)
@@ -240,7 +240,7 @@ func (h *PersonHandler) HandleListPersonsHTML(w http.ResponseWriter, r *http.Req
 	}
 
 	switch listResult := result.(type) {
-	case *api.ListPersonsOK:
+	case *api.GetPersonsOKApplicationJSON:
 		// Convert to template persons
 		templatePersons := make([]templates.Person, len(listResult.Persons))
 		for i, person := range listResult.Persons {
@@ -290,12 +290,12 @@ func (h *PersonHandler) HandleDeletePersonForm(w http.ResponseWriter, r *http.Re
 
 func (h *PersonHandler) HandleGetPersonsForSelect(w http.ResponseWriter, r *http.Request) {
 	// Call the API handler internally to get persons for the select dropdown
-	params := api.ListPersonsParams{
+	params := api.GetPersonsParams{
 		Limit:  api.OptInt{Value: 100, Set: true},
 		Offset: api.OptInt{Value: 0, Set: true},
 	}
 
-	result, err := h.ListPersons(r.Context(), params)
+	result, err := h.GetPersons(r.Context(), params)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		templates.PersonSelectError().Render(r.Context(), w)
@@ -303,7 +303,7 @@ func (h *PersonHandler) HandleGetPersonsForSelect(w http.ResponseWriter, r *http
 	}
 
 	switch listResult := result.(type) {
-	case *api.ListPersonsOK:
+	case *api.GetPersonsOKApplicationJSON:
 		// Convert to template persons
 		templatePersons := make([]templates.Person, len(listResult.Persons))
 		for i, person := range listResult.Persons {

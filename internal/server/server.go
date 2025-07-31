@@ -26,8 +26,11 @@ type Server struct {
 
 // New creates a new server instance
 func New(cfg *config.Config, apiHandler *handlers.CombinedAPIHandler, personHandler *handlers.PersonHandler, actionHandler *handlers.ActionHandler) (*Server, error) {
-	// Create ogen server
-	apiServer, err := api.NewServer(apiHandler)
+	// Create content negotiating handler
+	contentHandler := handlers.NewContentNegotiatingHandler(apiHandler)
+
+	// Create ogen server with content negotiating handler
+	apiServer, err := api.NewServer(contentHandler)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create API server: %w", err)
 	}
@@ -37,6 +40,7 @@ func New(cfg *config.Config, apiHandler *handlers.CombinedAPIHandler, personHand
 
 	// Wrap with middleware
 	handler := middleware.Chain(mux,
+		middleware.AddRequestToContext,
 		middleware.RecoveryMiddleware,
 		middleware.LoggingMiddleware,
 		middleware.SecurityHeadersMiddleware,
@@ -120,24 +124,38 @@ func setupRoutes(apiServer *api.Server, personHandler *handlers.PersonHandler, a
 	// Root endpoint - serve the main HTML page using templ
 	mux.HandleFunc("/", handleRootPage)
 
-	// Form handlers for HTMX - Person routes
+	// Legacy form handlers for HTMX compatibility (keeping for now)
 	mux.HandleFunc("/forms/persons/create", personHandler.HandleCreatePersonForm)
 	mux.HandleFunc("/forms/persons/list", personHandler.HandleListPersonsHTML)
 	mux.HandleFunc("/forms/persons/delete/", personHandler.HandleDeletePersonForm)
 	mux.HandleFunc("/forms/persons/select", personHandler.HandleGetPersonsForSelect)
 
-	// Form handlers for HTMX - Action routes
 	mux.HandleFunc("/forms/actions/create", actionHandler.HandleCreateActionForm)
 	mux.HandleFunc("/forms/actions/list", actionHandler.HandleListActionsHTML)
 	mux.HandleFunc("/forms/actions/delete/", actionHandler.HandleDeleteActionForm)
 
-	// API routes (mount the ogen server)
+	// Consolidated API routes with content negotiation (supports both JSON and HTML)
 	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiServer))
+
+	// Convenience routes that serve the same endpoints without /api/v1 prefix
+	mux.Handle("/persons/", createConvenienceHandler(apiServer, "/persons"))
+	mux.Handle("/persons", createConvenienceHandler(apiServer, "/persons"))
+	mux.Handle("/actions/", createConvenienceHandler(apiServer, "/actions"))
+	mux.Handle("/actions", createConvenienceHandler(apiServer, "/actions"))
 
 	// Static file serving for development
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	return mux
+}
+
+// createConvenienceHandler creates a handler that forwards requests to the API server
+// with proper path mapping for convenience routes
+func createConvenienceHandler(apiServer *api.Server, prefix string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Forward the request to the API server
+		apiServer.ServeHTTP(w, r)
+	}
 }
 
 // createHealthHandler creates a health check handler

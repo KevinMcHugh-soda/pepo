@@ -1,36 +1,36 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
-  title: Performance Tracking API
-  description: API for tracking performance of direct reports
+  title: Pepo API
+  description: API for managing persons and their actions
   version: 1.0.0
   contact:
-    name: Performance Tracking Team
-    email: help@example.com
+    name: API Support
+    email: support@example.com
 
 servers:
-  - url: http://localhost:8080/api/v1
-    description: Local development server
+  - url: http://localhost:8000
+    description: Development server
 
 paths:
   /persons:
     get:
-      summary: List all persons
-      operationId: listPersons
+      summary: Get all persons
+      operationId: getPersons
       tags:
         - persons
       parameters:
         - name: limit
           in: query
-          description: Maximum number of persons to return
+          description: Number of items to return
           required: false
           schema:
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
+            default: 10
         - name: offset
           in: query
-          description: Number of persons to skip
+          description: Number of items to skip
           required: false
           schema:
             type: integer
@@ -54,6 +54,9 @@ paths:
                 required:
                   - persons
                   - total
+            text/html:
+              schema:
+                type: string
         "500":
           description: Internal server error
           content:
@@ -79,6 +82,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
+            text/html:
+              schema:
+                type: string
         "400":
           description: Bad request
           content:
@@ -95,17 +101,17 @@ paths:
   /persons/{id}:
     get:
       summary: Get a person by ID
-      operationId: getPerson
+      operationId: getPersonById
       tags:
         - persons
       parameters:
         - name: id
           in: path
           required: true
-          description: Person ID (xid)
+          description: Person ID
           schema:
             type: string
-            pattern: "^[0-9a-v]{20}$"
+            pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
       responses:
         "200":
           description: Successful response
@@ -113,6 +119,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
+            text/html:
+              schema:
+                type: string
         "404":
           description: Person not found
           content:
@@ -135,7 +144,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: Person ID (xid)
+          description: Person ID
           schema:
             type: string
             pattern: "^[0-9a-v]{20}$"
@@ -152,6 +161,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
+            text/html:
+              schema:
+                type: string
         "400":
           description: Bad request
           content:
@@ -180,7 +192,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: Person ID (xid)
+          description: Person ID
           schema:
             type: string
             pattern: "^[0-9a-v]{20}$"
@@ -202,23 +214,23 @@ paths:
 
   /actions:
     get:
-      summary: List all actions
-      operationId: listActions
+      summary: Get all actions
+      operationId: getActions
       tags:
         - actions
       parameters:
         - name: limit
           in: query
-          description: Maximum number of actions to return
+          description: Number of items to return
           required: false
           schema:
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
+            default: 10
         - name: offset
           in: query
-          description: Number of actions to skip
+          description: Number of items to skip
           required: false
           schema:
             type: integer
@@ -226,14 +238,14 @@ paths:
             default: 0
         - name: person_id
           in: query
-          description: Filter actions by person ID
+          description: Filter by person ID
           required: false
           schema:
             type: string
             pattern: "^[0-9a-v]{20}$"
         - name: valence
           in: query
-          description: Filter actions by valence
+          description: Filter by valence
           required: false
           schema:
             type: string
@@ -256,6 +268,9 @@ paths:
                 required:
                   - actions
                   - total
+            text/html:
+              schema:
+                type: string
         "500":
           description: Internal server error
           content:
@@ -281,6 +296,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Action"
+            text/html:
+              schema:
+                type: string
         "400":
           description: Bad request
           content:
@@ -297,14 +315,14 @@ paths:
   /actions/{id}:
     get:
       summary: Get an action by ID
-      operationId: getAction
+      operationId: getActionById
       tags:
         - actions
       parameters:
         - name: id
           in: path
           required: true
-          description: Action ID (xid)
+          description: Action ID
           schema:
             type: string
             pattern: "^[0-9a-v]{20}$"
@@ -315,6 +333,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Action"
+            text/html:
+              schema:
+                type: string
         "404":
           description: Action not found
           content:
@@ -337,7 +358,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: Action ID (xid)
+          description: Action ID
           schema:
             type: string
             pattern: "^[0-9a-v]{20}$"
@@ -354,6 +375,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Action"
+            text/html:
+              schema:
+                type: string
         "400":
           description: Bad request
           content:
@@ -382,7 +406,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: Action ID (xid)
+          description: Action ID
           schema:
             type: string
             pattern: "^[0-9a-v]{20}$"
@@ -413,22 +437,22 @@ paths:
         - name: id
           in: path
           required: true
-          description: Person ID (xid)
+          description: Person ID
           schema:
             type: string
             pattern: "^[0-9a-v]{20}$"
         - name: limit
           in: query
-          description: Maximum number of actions to return
+          description: Number of items to return
           required: false
           schema:
             type: integer
             minimum: 1
             maximum: 100
-            default: 20
+            default: 10
         - name: offset
           in: query
-          description: Number of actions to skip
+          description: Number of items to skip
           required: false
           schema:
             type: integer
@@ -436,7 +460,7 @@ paths:
             default: 0
         - name: valence
           in: query
-          description: Filter actions by valence
+          description: Filter by valence
           required: false
           schema:
             type: string
@@ -455,10 +479,13 @@ paths:
                       $ref: "#/components/schemas/Action"
                   total:
                     type: integer
-                    description: Total number of actions for this person
+                    description: Total number of actions
                 required:
                   - actions
                   - total
+            text/html:
+              schema:
+                type: string
         "404":
           description: Person not found
           content:
@@ -484,7 +511,7 @@ components:
           example: "9m4e2mr0ui3e8a215n4g"
         name:
           type: string
-          description: Person's full name
+          description: Full name of the person
           minLength: 1
           maxLength: 255
           example: "John Doe"
@@ -492,12 +519,12 @@ components:
           type: string
           format: date-time
           description: When the person was created
-          example: "2023-12-01T10:30:00Z"
+          example: "2023-01-01T00:00:00Z"
         updated_at:
           type: string
           format: date-time
           description: When the person was last updated
-          example: "2023-12-01T10:30:00Z"
+          example: "2023-01-01T00:00:00Z"
       required:
         - id
         - name
@@ -509,7 +536,7 @@ components:
       properties:
         name:
           type: string
-          description: Person's full name
+          description: Full name of the person
           minLength: 1
           maxLength: 255
           example: "John Doe"
@@ -521,7 +548,7 @@ components:
       properties:
         name:
           type: string
-          description: Person's full name
+          description: Full name of the person
           minLength: 1
           maxLength: 255
           example: "John Doe"
@@ -545,17 +572,17 @@ components:
           type: string
           format: date-time
           description: When the action occurred
-          example: "2023-12-01T10:30:00Z"
+          example: "2023-01-01T00:00:00Z"
         description:
           type: string
           description: Description of the action
           minLength: 1
-          example: "Completed project ahead of schedule"
+          example: "Completed a task"
         references:
           type: string
-          description: References or links related to the action
+          description: Optional references or links related to the action
           nullable: true
-          example: "https://github.com/user/repo/pull/123"
+          example: "https://example.com/task/123"
         valence:
           type: string
           description: Whether the action was positive or negative
@@ -564,13 +591,13 @@ components:
         created_at:
           type: string
           format: date-time
-          description: When the action record was created
-          example: "2023-12-01T10:30:00Z"
+          description: When the action was created
+          example: "2023-01-01T00:00:00Z"
         updated_at:
           type: string
           format: date-time
-          description: When the action record was last updated
-          example: "2023-12-01T10:30:00Z"
+          description: When the action was last updated
+          example: "2023-01-01T00:00:00Z"
       required:
         - id
         - person_id
@@ -585,31 +612,32 @@ components:
       properties:
         person_id:
           type: string
-          description: ID of the person this action relates to
-          pattern: "^[0-9a-v]{20}$"
-          example: "9m4e2mr0ui3e8a215n4g"
+          description: ID of the person who performed the action
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          example: "123e4567-e89b-12d3-a456-426614174000"
         occurred_at:
           type: string
           format: date-time
-          description: When the action occurred (defaults to current time if not provided)
-          example: "2023-12-01T10:30:00Z"
+          description: When the action occurred
+          example: "2023-01-01T00:00:00Z"
         description:
           type: string
           description: Description of the action
           minLength: 1
-          example: "Completed project ahead of schedule"
+          example: "Completed a task"
         references:
           type: string
-          description: References or links related to the action
+          description: Optional references or links related to the action
           nullable: true
-          example: "https://github.com/user/repo/pull/123"
+          example: "https://example.com/task/123"
         valence:
           type: string
-          description: Whether the action was positive or negative
-          enum: [positive, negative]
+          description: Emotional valence of the action
+          enum: ["positive", "negative", "neutral"]
           example: "positive"
       required:
         - person_id
+        - occurred_at
         - description
         - valence
 
@@ -625,17 +653,17 @@ components:
           type: string
           format: date-time
           description: When the action occurred
-          example: "2023-12-01T10:30:00Z"
+          example: "2023-01-01T00:00:00Z"
         description:
           type: string
           description: Description of the action
           minLength: 1
-          example: "Completed project ahead of schedule"
+          example: "Completed a task"
         references:
           type: string
-          description: References or links related to the action
+          description: Optional references or links related to the action
           nullable: true
-          example: "https://github.com/user/repo/pull/123"
+          example: "https://example.com/task/123"
         valence:
           type: string
           description: Whether the action was positive or negative
@@ -653,11 +681,11 @@ components:
         message:
           type: string
           description: Error message
-          example: "Something went wrong"
+          example: "Resource not found"
         code:
           type: string
           description: Error code
-          example: "INTERNAL_ERROR"
+          example: "NOT_FOUND"
       required:
         - message
         - code
