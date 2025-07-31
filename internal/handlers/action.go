@@ -85,7 +85,7 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 	}
 
 	// Create action in database
-	action, err := h.queries.CreateAction(ctx, db.CreateActionParams{
+	row, err := h.queries.CreateAction(ctx, db.CreateActionParams{
 		XidStr:      actionID,
 		XidStr_2:    req.PersonID,
 		OccurredAt:  occurredAt,
@@ -93,6 +93,7 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 		References:  sql.NullString{String: req.References.Or(""), Valid: req.References.IsSet()},
 		Valence:     db.ValenceType(req.Valence),
 	})
+	action := row.Action
 	if err != nil {
 		log.Printf("Error creating action: %v", err)
 		return &api.CreateActionInternalServerError{
@@ -120,7 +121,8 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 }
 
 func (h *ActionHandler) GetAction(ctx context.Context, params api.GetActionParams) (api.GetActionRes, error) {
-	action, err := h.queries.GetActionByID(ctx, params.ID)
+	row, err := h.queries.GetActionByID(ctx, params.ID)
+	action := row.Action
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return &api.GetActionNotFound{
@@ -170,56 +172,60 @@ func (h *ActionHandler) ListActions(ctx context.Context, params api.ListActionsP
 	// Handle different filtering options
 	if params.PersonID.IsSet() && params.Valence.IsSet() {
 		// Filter by both person and valence
-		actions, err := h.queries.ListActionsByPersonIDAndValence(ctx, db.ListActionsByPersonIDAndValenceParams{
+		rows, err := h.queries.ListActionsByPersonIDAndValence(ctx, db.ListActionsByPersonIDAndValenceParams{
 			XidStr:  params.PersonID.Value,
 			Valence: db.ValenceType(params.Valence.Value),
 			Limit:   limit,
 			Offset:  offset,
 		})
 		if err == nil {
-			apiActions = make([]api.Action, len(actions))
-			for i, a := range actions {
+			apiActions = make([]api.Action, len(rows))
+			for i, row := range rows {
+				a := row.Action
 				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
 			}
 			total, err = h.queries.CountActionsByPersonID(ctx, params.PersonID.Value)
 		}
 	} else if params.PersonID.IsSet() {
 		// Filter by person only
-		actions, err := h.queries.ListActionsByPersonID(ctx, db.ListActionsByPersonIDParams{
+		rows, err := h.queries.ListActionsByPersonID(ctx, db.ListActionsByPersonIDParams{
 			XidStr: params.PersonID.Value,
 			Limit:  limit,
 			Offset: offset,
 		})
 		if err == nil {
-			apiActions = make([]api.Action, len(actions))
-			for i, a := range actions {
+			apiActions = make([]api.Action, len(rows))
+			for i, row := range rows {
+				a := row.Action
 				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
 			}
 			total, err = h.queries.CountActionsByPersonID(ctx, params.PersonID.Value)
 		}
 	} else if params.Valence.IsSet() {
 		// Filter by valence only
-		actions, err := h.queries.ListActionsByValence(ctx, db.ListActionsByValenceParams{
+		rows, err := h.queries.ListActionsByValence(ctx, db.ListActionsByValenceParams{
 			Valence: db.ValenceType(params.Valence.Value),
 			Limit:   limit,
 			Offset:  offset,
 		})
 		if err == nil {
-			apiActions = make([]api.Action, len(actions))
-			for i, a := range actions {
+			apiActions = make([]api.Action, len(rows))
+			for i, row := range rows {
+				a := row.Action
 				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
 			}
 			total, err = h.queries.CountActions(ctx)
 		}
 	} else {
 		// No filters
-		actions, err := h.queries.ListActions(ctx, db.ListActionsParams{
+		rows, err := h.queries.ListActions(ctx, db.ListActionsParams{
 			Limit:  limit,
 			Offset: offset,
 		})
 		if err == nil {
-			apiActions = make([]api.Action, len(actions))
-			for i, a := range actions {
+			apiActions = make([]api.Action, len(rows))
+			for i, row := range rows {
+				a := row.Action
 				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
 			}
 			total, err = h.queries.CountActions(ctx)
@@ -249,7 +255,7 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 		}, nil
 	}
 
-	action, err := h.queries.UpdateAction(ctx, db.UpdateActionParams{
+	row, err := h.queries.UpdateAction(ctx, db.UpdateActionParams{
 		XidStr:      params.ID,
 		XidStr_2:    req.PersonID,
 		OccurredAt:  req.OccurredAt,
@@ -257,6 +263,7 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 		References:  sql.NullString{String: req.References.Or(""), Valid: req.References.IsSet()},
 		Valence:     db.ValenceType(req.Valence),
 	})
+	action := row.Action
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return &api.UpdateActionNotFound{
@@ -316,27 +323,30 @@ func (h *ActionHandler) GetPersonActions(ctx context.Context, params api.GetPers
 	var err error
 
 	if params.Valence.IsSet() {
-		actions, err := h.queries.ListActionsByPersonIDAndValence(ctx, db.ListActionsByPersonIDAndValenceParams{
+		rows, err := h.queries.ListActionsByPersonIDAndValence(ctx, db.ListActionsByPersonIDAndValenceParams{
 			XidStr:  params.ID,
 			Valence: db.ValenceType(params.Valence.Value),
 			Limit:   limit,
 			Offset:  offset,
 		})
 		if err == nil {
-			apiActions = make([]api.Action, len(actions))
-			for i, a := range actions {
+			apiActions = make([]api.Action, len(rows))
+			for i, r := range rows {
+				a := r.Action
 				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
 			}
 		}
 	} else {
-		actions, err := h.queries.ListActionsByPersonID(ctx, db.ListActionsByPersonIDParams{
+		rows, err := h.queries.ListActionsByPersonID(ctx, db.ListActionsByPersonIDParams{
 			XidStr: params.ID,
 			Limit:  limit,
 			Offset: offset,
 		})
 		if err == nil {
-			apiActions = make([]api.Action, len(actions))
-			for i, a := range actions {
+			apiActions = make([]api.Action, len(rows))
+			for i, r := range rows {
+				a := r.Action
+
 				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
 			}
 		}
