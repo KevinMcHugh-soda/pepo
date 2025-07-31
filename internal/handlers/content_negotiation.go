@@ -170,6 +170,7 @@ func (h *ContentNegotiatingHandler) GetPersonById(ctx context.Context, params ap
 							Valence:     string(action.Valence),
 							CreatedAt:   action.CreatedAt,
 							UpdatedAt:   action.UpdatedAt,
+							PersonName:  action.PersonName.Value,
 						}
 					}
 				}
@@ -332,6 +333,7 @@ func (h *ContentNegotiatingHandler) GetActionById(ctx context.Context, params ap
 					Valence:     string(jsonResult.Valence),
 					CreatedAt:   jsonResult.CreatedAt,
 					UpdatedAt:   jsonResult.UpdatedAt,
+					PersonName:  jsonResult.PersonName.Value,
 				}
 
 				// Render template and return HTML response

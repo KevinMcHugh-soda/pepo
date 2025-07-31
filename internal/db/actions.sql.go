@@ -291,8 +291,9 @@ func (q *Queries) GetRecentActionsByPersonID(ctx context.Context, arg GetRecentA
 }
 
 const listActions = `-- name: ListActions :many
-SELECT action.id, action.person_id, action.occurred_at, action.description, action."references", action.valence, action.created_at, action.updated_at
+SELECT action.id, action.person_id, action.occurred_at, action.description, action."references", action.valence, action.created_at, action.updated_at, person.name as person_name
 FROM action
+JOIN person ON action.person_id = person.id
 ORDER BY occurred_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -303,7 +304,8 @@ type ListActionsParams struct {
 }
 
 type ListActionsRow struct {
-	Action Action `db:"action" json:"action"`
+	Action     Action `db:"action" json:"action"`
+	PersonName string `db:"person_name" json:"person_name"`
 }
 
 func (q *Queries) ListActions(ctx context.Context, arg ListActionsParams) ([]ListActionsRow, error) {
@@ -324,6 +326,7 @@ func (q *Queries) ListActions(ctx context.Context, arg ListActionsParams) ([]Lis
 			&i.Action.Valence,
 			&i.Action.CreatedAt,
 			&i.Action.UpdatedAt,
+			&i.PersonName,
 		); err != nil {
 			return nil, err
 		}

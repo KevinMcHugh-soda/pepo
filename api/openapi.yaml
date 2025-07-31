@@ -598,6 +598,10 @@ components:
           format: date-time
           description: When the action was last updated
           example: "2023-01-01T00:00:00Z"
+        person_name:
+          type: string
+          description: Name of the person who performed the action
+          example: "John Doe"
       required:
         - id
         - person_id

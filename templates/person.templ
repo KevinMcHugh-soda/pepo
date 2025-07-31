@@ -37,7 +37,6 @@ templ PersonItem(person Person) {
 		<div class="flex justify-between items-center">
 			<div>
 				<a href={ "/api/v1/people/" + person.ID } class="font-medium text-blue-600 hover:text-blue-800 hover:underline">{ person.Name }</a>
-				<span class="text-sm text-gray-500 ml-2">ID: { person.ID }</span>
 			</div>
 			<div class="space-x-2">
 				<!-- Edit functionality to be implemented with consolidated API -->

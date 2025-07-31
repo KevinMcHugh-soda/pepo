@@ -4,14 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"time"
 
 	"github.com/rs/xid"
-	xidb "github.com/rs/xid/b"
 
 	"pepo/internal/api"
 	"pepo/internal/db"
-	"pepo/templates"
 )
 
 type ActionHandler struct {
@@ -25,41 +22,22 @@ func NewActionHandler(queries *db.Queries) *ActionHandler {
 }
 
 // Helper function to convert database action row to API action
-func convertToAPIAction(id, personID xidb.ID, occurredAt time.Time, description string, references sql.NullString, valence db.ValenceType, createdAt, updatedAt time.Time) api.Action {
+func convertToAPIAction(action db.Action) api.Action {
 	apiAction := api.Action{
-		ID:          id.String(),
-		PersonID:    personID.String(),
-		OccurredAt:  occurredAt,
-		Description: description,
-		Valence:     api.ActionValence(valence),
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
+		ID:          action.ID.String(),
+		PersonID:    action.PersonID.String(),
+		OccurredAt:  action.OccurredAt,
+		Description: action.Description,
+		Valence:     api.ActionValence(action.Valence),
+		CreatedAt:   action.CreatedAt,
+		UpdatedAt:   action.UpdatedAt,
 	}
 
-	if references.Valid {
-		apiAction.References = api.OptNilString{Value: references.String, Set: true}
+	if action.References.Valid {
+		apiAction.References = api.OptNilString{Value: action.References.String, Set: true}
 	}
 
 	return apiAction
-}
-
-// Helper function to convert API action to template action
-func convertToTemplateAction(apiAction api.Action) templates.Action {
-	templateAction := templates.Action{
-		ID:          apiAction.ID,
-		PersonID:    apiAction.PersonID,
-		OccurredAt:  apiAction.OccurredAt,
-		Description: apiAction.Description,
-		Valence:     string(apiAction.Valence),
-		CreatedAt:   apiAction.CreatedAt,
-		UpdatedAt:   apiAction.UpdatedAt,
-	}
-
-	if apiAction.References.IsSet() {
-		templateAction.References = apiAction.References.Value
-	}
-
-	return templateAction
 }
 
 // API Handlers
@@ -177,7 +155,7 @@ func (h *ActionHandler) GetActions(ctx context.Context, params api.GetActionsPar
 			apiActions = make([]api.Action, len(rows))
 			for i, row := range rows {
 				a := row.Action
-				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
+				apiActions[i] = convertToAPIAction(a)
 			}
 			total, err = h.queries.CountActionsByPersonID(ctx, params.PersonID.Value)
 		}
@@ -192,7 +170,7 @@ func (h *ActionHandler) GetActions(ctx context.Context, params api.GetActionsPar
 			apiActions = make([]api.Action, len(rows))
 			for i, row := range rows {
 				a := row.Action
-				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
+				apiActions[i] = convertToAPIAction(a)
 			}
 			total, err = h.queries.CountActionsByPersonID(ctx, params.PersonID.Value)
 		}
@@ -207,7 +185,7 @@ func (h *ActionHandler) GetActions(ctx context.Context, params api.GetActionsPar
 			apiActions = make([]api.Action, len(rows))
 			for i, row := range rows {
 				a := row.Action
-				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
+				apiActions[i] = convertToAPIAction(a)
 			}
 			total, err = h.queries.CountActions(ctx)
 		}
@@ -221,7 +199,9 @@ func (h *ActionHandler) GetActions(ctx context.Context, params api.GetActionsPar
 			apiActions = make([]api.Action, len(rows))
 			for i, row := range rows {
 				a := row.Action
-				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
+				action := convertToAPIAction(a)
+				action.PersonName = api.NewOptString(row.PersonName)
+				apiActions[i] = action
 			}
 			total, err = h.queries.CountActions(ctx)
 		}
@@ -328,7 +308,7 @@ func (h *ActionHandler) GetPersonActions(ctx context.Context, params api.GetPers
 			apiActions = make([]api.Action, len(rows))
 			for i, r := range rows {
 				a := r.Action
-				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
+				apiActions[i] = convertToAPIAction(a)
 			}
 		}
 	} else {
@@ -342,7 +322,7 @@ func (h *ActionHandler) GetPersonActions(ctx context.Context, params api.GetPers
 			for i, r := range rows {
 				a := r.Action
 
-				apiActions[i] = convertToAPIAction(a.ID, a.PersonID, a.OccurredAt, a.Description, a.References, a.Valence, a.CreatedAt, a.UpdatedAt)
+				apiActions[i] = convertToAPIAction(a)
 			}
 		}
 	}

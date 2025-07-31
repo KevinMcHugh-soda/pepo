@@ -9,8 +9,9 @@ FROM action
 WHERE id = x2b($1);
 
 -- name: ListActions :many
-SELECT sqlc.embed(action)
+SELECT sqlc.embed(action), person.name as person_name
 FROM action
+JOIN person ON action.person_id = person.id
 ORDER BY occurred_at DESC
 LIMIT $1 OFFSET $2;
 

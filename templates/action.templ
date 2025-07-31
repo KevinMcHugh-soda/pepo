@@ -11,6 +11,7 @@ type Action struct {
 	Valence     string    `json:"valence"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+	PersonName  string    `json:"person_name"`
 }
 
 func getValenceColor(valence string) string {
@@ -34,7 +35,7 @@ templ ActionItem(action Action) {
 				<div class="flex items-center gap-2 mb-1">
 					<span class={ "inline-block w-2 h-2 rounded-full " + getBgColorForValence(action.Valence) }></span>
 					<span class={ "font-medium capitalize " + getValenceColor(action.Valence) }>{ action.Valence }</span>
-					<span class="text-xs text-gray-500">Person ID: { action.PersonID }</span>
+					<span class="text-xs text-gray-500">{ action.PersonName }</span>
 				</div>
 				<p class="text-gray-800 mb-1">{ action.Description }</p>
 				if action.References != "" {
