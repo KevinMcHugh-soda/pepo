@@ -5,7 +5,7 @@ RETURNING sqlc.embed(action);
 
 -- name: GetActionByID :one
 SELECT sqlc.embed(action)
-FROM action a
+FROM action
 WHERE id = x2b($1);
 
 -- name: ListActions :many

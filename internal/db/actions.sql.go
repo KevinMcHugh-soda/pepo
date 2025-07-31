@@ -86,8 +86,8 @@ func (q *Queries) DeleteAction(ctx context.Context, xidStr string) error {
 }
 
 const getActionByID = `-- name: GetActionByID :one
-SELECT 
-FROM action a
+SELECT action.id, action.person_id, action.occurred_at, action.description, action."references", action.valence, action.created_at, action.updated_at
+FROM action
 WHERE id = x2b($1)
 `
 
