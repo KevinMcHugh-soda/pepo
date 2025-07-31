@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/rs/xid"
 
@@ -181,111 +180,6 @@ func (h *PersonHandler) DeletePerson(ctx context.Context, params api.DeletePerso
 	}
 
 	return &api.DeletePersonNoContent{}, nil
-}
-
-// Form Handlers
-
-func (h *PersonHandler) HandleCreatePersonForm(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	name := r.FormValue("name")
-	if name == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		templates.ActionError("Name is required").Render(r.Context(), w)
-		return
-	}
-
-	// Call the API handler internally
-	req := &api.CreatePersonRequest{Name: name}
-	result, err := h.CreatePerson(r.Context(), req)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templates.ActionError("Failed to create person").Render(r.Context(), w)
-		return
-	}
-
-	// Check if result is a person or error
-	switch person := result.(type) {
-	case *api.Person:
-		// Convert to template person
-		templatePerson := templates.Person{
-			ID:        person.ID,
-			Name:      person.Name,
-			CreatedAt: person.CreatedAt,
-			UpdatedAt: person.UpdatedAt,
-		}
-		w.Header().Set("Content-Type", "text/html")
-		templates.PersonItem(templatePerson).Render(r.Context(), w)
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-		templates.ActionError("Failed to create person").Render(r.Context(), w)
-	}
-}
-
-func (h *PersonHandler) HandleListPersonsHTML(w http.ResponseWriter, r *http.Request) {
-	// Call the API handler internally
-	params := api.GetPersonsParams{
-		Limit:  api.OptInt{Value: 50, Set: true},
-		Offset: api.OptInt{Value: 0, Set: true},
-	}
-
-	result, err := h.GetPersons(r.Context(), params)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templates.ActionError("Failed to load persons").Render(r.Context(), w)
-		return
-	}
-
-	switch listResult := result.(type) {
-	case *api.GetPersonsOKApplicationJSON:
-		// Convert to template persons
-		templatePersons := make([]templates.Person, len(listResult.Persons))
-		for i, person := range listResult.Persons {
-			templatePersons[i] = templates.Person{
-				ID:        person.ID,
-				Name:      person.Name,
-				CreatedAt: person.CreatedAt,
-				UpdatedAt: person.UpdatedAt,
-			}
-		}
-
-		w.Header().Set("Content-Type", "text/html")
-		templates.PersonList(templatePersons).Render(r.Context(), w)
-	default:
-		w.WriteHeader(http.StatusInternalServerError)
-		templates.ActionError("Failed to load persons").Render(r.Context(), w)
-	}
-}
-
-func (h *PersonHandler) HandleDeletePersonForm(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Extract person ID from URL path
-	pathParts := strings.Split(r.URL.Path, "/")
-	if len(pathParts) < 5 {
-		w.WriteHeader(http.StatusBadRequest)
-		templates.ActionError("Invalid person ID").Render(r.Context(), w)
-		return
-	}
-	personID := pathParts[4] // /forms/persons/delete/{id}
-
-	// Call the API handler internally
-	params := api.DeletePersonParams{ID: personID}
-	_, err := h.DeletePerson(r.Context(), params)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		templates.ActionError("Failed to delete person").Render(r.Context(), w)
-		return
-	}
-
-	// Return empty content to remove the element
-	w.WriteHeader(http.StatusOK)
 }
 
 func (h *PersonHandler) HandleGetPersonsForSelect(w http.ResponseWriter, r *http.Request) {
