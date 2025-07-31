@@ -130,9 +130,40 @@ func (h *ContentNegotiatingHandler) GetPersonById(ctx context.Context, params ap
 					UpdatedAt: jsonResult.UpdatedAt,
 				}
 
-				// Render template and return HTML response
+				// Fetch the person's actions for the detail view
+				actionsParams := api.GetPersonActionsParams{
+					ID:    params.ID,
+					Limit: api.OptInt{Value: 100, Set: true}, // Get more actions for detail view
+				}
+
+				actionsResult, err := h.combinedHandler.GetPersonActions(ctx, actionsParams)
+				if err != nil {
+					// If we can't get actions, still show the person with empty actions
+					return &api.GetPersonByIdOKTextHTML{
+						Data: renderTemplate(templates.PersonDetail(templatePerson, []templates.Action{})),
+					}, nil
+				}
+
+				var templateActions []templates.Action
+				if actionsJSON, ok := actionsResult.(*api.GetPersonActionsOKApplicationJSON); ok {
+					templateActions = make([]templates.Action, len(actionsJSON.Actions))
+					for i, action := range actionsJSON.Actions {
+						templateActions[i] = templates.Action{
+							ID:          action.ID,
+							PersonID:    action.PersonID,
+							OccurredAt:  action.OccurredAt,
+							Description: action.Description,
+							References:  action.References.Or(""),
+							Valence:     string(action.Valence),
+							CreatedAt:   action.CreatedAt,
+							UpdatedAt:   action.UpdatedAt,
+						}
+					}
+				}
+
+				// Render PersonDetail template with person and actions
 				return &api.GetPersonByIdOKTextHTML{
-					Data: renderTemplate(templates.PersonItem(templatePerson)),
+					Data: renderTemplate(templates.PersonDetail(templatePerson, templateActions)),
 				}, nil
 			}
 		}
