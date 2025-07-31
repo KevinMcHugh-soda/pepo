@@ -9,6 +9,29 @@ type Person struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type PersonWithLastAction struct {
+	ID           string     `json:"id"`
+	Name         string     `json:"name"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+	LastActionAt *time.Time `json:"last_action_at,omitempty"`
+}
+
+func (p PersonWithLastAction) HasRecentAction() bool {
+	if p.LastActionAt == nil {
+		return false
+	}
+	weekAgo := time.Now().AddDate(0, 0, -7)
+	return p.LastActionAt.After(weekAgo)
+}
+
+func (p PersonWithLastAction) LastActionDisplay() string {
+	if p.LastActionAt == nil {
+		return "No actions recorded"
+	}
+	return p.LastActionAt.Format("Jan 2, 2006 at 3:04 PM")
+}
+
 templ PersonItem(person Person) {
 	<div class="border-b pb-2 mb-2" id={ "person-" + person.ID }>
 		<div class="flex justify-between items-center">
@@ -35,12 +58,51 @@ templ PersonItem(person Person) {
 	</div>
 }
 
+templ PersonWithLastActionItem(person PersonWithLastAction) {
+	<div class="border-b pb-2 mb-2" id={ "person-" + person.ID }>
+		<div class="flex justify-between items-center">
+			<div>
+				<a href={ "/api/v1/people/" + person.ID } class="font-medium text-blue-600 hover:text-blue-800 hover:underline">{ person.Name }</a>
+				<span class="text-sm text-gray-500 ml-2">ID: { person.ID }</span>
+			</div>
+			<div class="space-x-2">
+				<button
+					hx-delete={ "/api/v1/people/" + person.ID }
+					hx-target={ "#person-" + person.ID }
+					hx-swap="outerHTML"
+					hx-confirm="Are you sure you want to delete this person?"
+					class="text-red-500 hover:text-red-700 text-sm"
+				>
+					Delete
+				</button>
+			</div>
+		</div>
+		<div class="text-xs mt-1">
+			if person.HasRecentAction() {
+				<span class="text-green-600 font-medium">Last action: { person.LastActionDisplay() }</span>
+			} else {
+				<span class="text-red-600 font-medium bg-red-50 px-2 py-1 rounded">{ person.LastActionDisplay() }</span>
+			}
+		</div>
+	</div>
+}
+
 templ PersonList(persons []Person) {
 	if len(persons) == 0 {
 		<div class="text-gray-500 text-center py-4">No people found. Add someone above!</div>
 	} else {
 		for _, person := range persons {
 			@PersonItem(person)
+		}
+	}
+}
+
+templ PersonWithLastActionList(persons []PersonWithLastAction) {
+	if len(persons) == 0 {
+		<div class="text-gray-500 text-center py-4">No people found. Add someone above!</div>
+	} else {
+		for _, person := range persons {
+			@PersonWithLastActionItem(person)
 		}
 	}
 }

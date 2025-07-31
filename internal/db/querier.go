@@ -27,6 +27,7 @@ type Querier interface {
 	ListActionsByPersonIDAndValence(ctx context.Context, arg ListActionsByPersonIDAndValenceParams) ([]ListActionsByPersonIDAndValenceRow, error)
 	ListActionsByValence(ctx context.Context, arg ListActionsByValenceParams) ([]ListActionsByValenceRow, error)
 	ListPersons(ctx context.Context, arg ListPersonsParams) ([]ListPersonsRow, error)
+	ListPersonsWithLastAction(ctx context.Context, arg ListPersonsWithLastActionParams) ([]ListPersonsWithLastActionRow, error)
 	SearchActionsByDescription(ctx context.Context, arg SearchActionsByDescriptionParams) ([]SearchActionsByDescriptionRow, error)
 	SearchPersonsByName(ctx context.Context, arg SearchPersonsByNameParams) ([]SearchPersonsByNameRow, error)
 	UpdateAction(ctx context.Context, arg UpdateActionParams) (UpdateActionRow, error)

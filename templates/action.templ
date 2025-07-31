@@ -42,9 +42,6 @@ templ ActionItem(action Action) {
 						<a href={ templ.URL(action.References) } target="_blank" class="underline">Reference</a>
 					</div>
 				}
-				<div class="text-xs text-gray-400">
-					Occurred: { action.OccurredAt.Format("2006-01-02 15:04") } | Created: { action.CreatedAt.Format("2006-01-02 15:04") }
-				</div>
 			</div>
 			<div class="space-x-2 ml-4">
 				<button

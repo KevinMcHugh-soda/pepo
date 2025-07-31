@@ -61,45 +61,58 @@ func renderTemplate(component templ.Component) io.Reader {
 
 // GetPersons handles both JSON and HTML requests for listing people
 func (h *ContentNegotiatingHandler) GetPersons(ctx context.Context, params api.GetPersonsParams) (api.GetPersonsRes, error) {
-	// Call the business logic
-	result, err := h.combinedHandler.GetPersons(ctx, params)
-	if err != nil {
-		return result, err
-	}
-
 	// Check if we have request context to determine response type
 	if req := h.getRequestFromContext(ctx); req != nil {
 		responseType := h.determineResponseType(req)
 
 		if responseType == "text/html" {
-			// Handle HTML response
-			switch jsonResult := result.(type) {
-			case *api.GetPersonsOKApplicationJSON:
-				// Convert API persons to template people
-				templatePersons := make([]templates.Person, len(jsonResult.Persons))
-				for i, person := range jsonResult.Persons {
-					templatePersons[i] = templates.Person{
-						ID:        person.ID,
-						Name:      person.Name,
-						CreatedAt: person.CreatedAt,
-						UpdatedAt: person.UpdatedAt,
-					}
+			// Check if this is a request for select options format
+			if req.URL.Query().Get("format") == "select" {
+				// For select options, we still need the basic person data
+				result, err := h.combinedHandler.GetPersons(ctx, params)
+				if err != nil {
+					return result, err
 				}
 
-				// Check if this is a request for select options format
-				if req.URL.Query().Get("format") == "select" {
+				switch jsonResult := result.(type) {
+				case *api.GetPersonsOKApplicationJSON:
+					// Convert API persons to template people
+					templatePersons := make([]templates.Person, len(jsonResult.Persons))
+					for i, person := range jsonResult.Persons {
+						templatePersons[i] = templates.Person{
+							ID:        person.ID,
+							Name:      person.Name,
+							CreatedAt: person.CreatedAt,
+							UpdatedAt: person.UpdatedAt,
+						}
+					}
 					// Render select options template
 					return &api.GetPersonsOKTextHTML{
 						Data: renderTemplate(templates.PersonSelectOptions(templatePersons)),
 					}, nil
 				}
+			} else {
+				// For regular list, get persons with last action data
+				templatePersons, err := h.combinedHandler.GetPersonsWithLastAction(ctx, params)
+				if err != nil {
+					return &api.Error{
+						Message: "Failed to get people with last actions",
+						Code:    "INTERNAL_ERROR",
+					}, nil
+				}
 
-				// Render regular person list template
+				// Render person list with last action template
 				return &api.GetPersonsOKTextHTML{
-					Data: renderTemplate(templates.PersonList(templatePersons)),
+					Data: renderTemplate(templates.PersonWithLastActionList(templatePersons)),
 				}, nil
 			}
 		}
+	}
+
+	// Call the business logic for JSON response
+	result, err := h.combinedHandler.GetPersons(ctx, params)
+	if err != nil {
+		return result, err
 	}
 
 	// Return JSON response (default)

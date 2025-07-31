@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"pepo/internal/api"
+	"pepo/templates"
 )
 
 // CombinedAPIHandler implements all ogen interfaces by delegating to specific handlers
@@ -64,4 +65,8 @@ func (h *CombinedAPIHandler) DeleteAction(ctx context.Context, params api.Delete
 
 func (h *CombinedAPIHandler) GetPersonActions(ctx context.Context, params api.GetPersonActionsParams) (api.GetPersonActionsRes, error) {
 	return h.actionHandler.GetPersonActions(ctx, params)
+}
+
+func (h *CombinedAPIHandler) GetPersonsWithLastAction(ctx context.Context, params api.GetPersonsParams) ([]templates.PersonWithLastAction, error) {
+	return h.personHandler.GetPersonsWithLastAction(ctx, params)
 }

@@ -38,3 +38,16 @@ FROM person
 WHERE name ILIKE '%' || $1 || '%'
 ORDER BY name
 LIMIT $2 OFFSET $3;
+
+-- name: ListPersonsWithLastAction :many
+SELECT
+    b2x(p.id) as id,
+    p.name,
+    p.created_at,
+    p.updated_at,
+    MAX(a.occurred_at) as last_action_at
+FROM person p
+LEFT JOIN action a ON p.id = a.person_id
+GROUP BY p.id, p.name, p.created_at, p.updated_at
+ORDER BY p.created_at DESC
+LIMIT $1 OFFSET $2;

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/rs/xid"
 
@@ -132,6 +133,57 @@ func (h *PersonHandler) GetPersons(ctx context.Context, params api.GetPersonsPar
 		Persons: apiPersons,
 		Total:   int(total),
 	}, nil
+}
+
+func (h *PersonHandler) GetPersonsWithLastAction(ctx context.Context, params api.GetPersonsParams) ([]templates.PersonWithLastAction, error) {
+	limit := int32(10)
+	if params.Limit.IsSet() {
+		limit = int32(params.Limit.Value)
+	}
+
+	offset := int32(0)
+	if params.Offset.IsSet() {
+		offset = int32(params.Offset.Value)
+	}
+
+	// Get persons with last action data
+	persons, err := h.queries.ListPersonsWithLastAction(ctx, db.ListPersonsWithLastActionParams{
+		Limit:  limit,
+		Offset: offset,
+	})
+	if err != nil {
+		log.Printf("Error listing persons with last action: %v", err)
+		return nil, err
+	}
+
+	// Convert to template PersonWithLastAction
+	templatePersons := make([]templates.PersonWithLastAction, len(persons))
+	for i, person := range persons {
+		templatePerson := templates.PersonWithLastAction{
+			ID:        person.ID,
+			Name:      person.Name,
+			CreatedAt: person.CreatedAt,
+			UpdatedAt: person.UpdatedAt,
+		}
+
+		// Handle the last_action_at which might be nil or different types
+		if person.LastActionAt != nil {
+			switch v := person.LastActionAt.(type) {
+			case time.Time:
+				if !v.IsZero() {
+					templatePerson.LastActionAt = &v
+				}
+			case *time.Time:
+				if v != nil && !v.IsZero() {
+					templatePerson.LastActionAt = v
+				}
+			}
+		}
+
+		templatePersons[i] = templatePerson
+	}
+
+	return templatePersons, nil
 }
 
 func (h *PersonHandler) UpdatePerson(ctx context.Context, req *api.UpdatePersonRequest, params api.UpdatePersonParams) (api.UpdatePersonRes, error) {

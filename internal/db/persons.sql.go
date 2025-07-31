@@ -159,6 +159,62 @@ func (q *Queries) ListPersons(ctx context.Context, arg ListPersonsParams) ([]Lis
 	return items, nil
 }
 
+const listPersonsWithLastAction = `-- name: ListPersonsWithLastAction :many
+SELECT
+    b2x(p.id) as id,
+    p.name,
+    p.created_at,
+    p.updated_at,
+    MAX(a.occurred_at) as last_action_at
+FROM person p
+LEFT JOIN action a ON p.id = a.person_id
+GROUP BY p.id, p.name, p.created_at, p.updated_at
+ORDER BY p.created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type ListPersonsWithLastActionParams struct {
+	Limit  int32 `db:"limit" json:"limit"`
+	Offset int32 `db:"offset" json:"offset"`
+}
+
+type ListPersonsWithLastActionRow struct {
+	ID           string      `db:"id" json:"id"`
+	Name         string      `db:"name" json:"name"`
+	CreatedAt    time.Time   `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time   `db:"updated_at" json:"updated_at"`
+	LastActionAt interface{} `db:"last_action_at" json:"last_action_at"`
+}
+
+func (q *Queries) ListPersonsWithLastAction(ctx context.Context, arg ListPersonsWithLastActionParams) ([]ListPersonsWithLastActionRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPersonsWithLastAction, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListPersonsWithLastActionRow{}
+	for rows.Next() {
+		var i ListPersonsWithLastActionRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.LastActionAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const searchPersonsByName = `-- name: SearchPersonsByName :many
 SELECT b2x(id) as id, name, created_at, updated_at
 FROM person
