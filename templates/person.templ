@@ -62,7 +62,6 @@ templ PersonWithLastActionItem(person PersonWithLastAction) {
 		<div class="flex justify-between items-center">
 			<div>
 				<a href={ "/api/v1/people/" + person.ID } class="font-medium text-blue-600 hover:text-blue-800 hover:underline">{ person.Name }</a>
-				<span class="text-sm text-gray-500 ml-2">ID: { person.ID }</span>
 			</div>
 			<div class="space-x-2">
 				<button
@@ -130,11 +129,6 @@ templ PersonDetail(person Person, actions []Action) {
 			</a>
 			<div class="bg-white rounded-lg shadow p-6">
 				<h1 class="text-2xl font-bold text-gray-900 mb-2">{ person.Name }</h1>
-				<div class="text-sm text-gray-600">
-					<p>ID: { person.ID }</p>
-					<p>Created: { person.CreatedAt.Format("2006-01-02 15:04:05") }</p>
-					<p>Updated: { person.UpdatedAt.Format("2006-01-02 15:04:05") }</p>
-				</div>
 			</div>
 		</div>
 		<!-- Record Action Form -->
@@ -171,9 +165,6 @@ templ PersonDetail(person Person, actions []Action) {
 											</a>
 										</div>
 									}
-									<div class="text-xs text-gray-400">
-										Action ID: { action.ID } | Created: { action.CreatedAt.Format("2006-01-02 15:04") }
-									</div>
 								</div>
 								<div class="ml-4">
 									<button

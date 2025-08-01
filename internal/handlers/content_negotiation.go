@@ -292,6 +292,7 @@ func (h *ContentNegotiatingHandler) GetActions(ctx context.Context, params api.G
 						Valence:     string(action.Valence),
 						CreatedAt:   action.CreatedAt,
 						UpdatedAt:   action.UpdatedAt,
+						PersonName:  action.PersonName.Value,
 					}
 				}
 
