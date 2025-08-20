@@ -83,8 +83,8 @@ type Action struct {
 }
 
 type ActionTheme struct {
-	ActionID  xidb.ID   `db:"action_id" json:"action_id"`
-	ThemeID   xidb.ID   `db:"theme_id" json:"theme_id"`
+	ActionID  []byte    `db:"action_id" json:"action_id"`
+	ThemeID   []byte    `db:"theme_id" json:"theme_id"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
