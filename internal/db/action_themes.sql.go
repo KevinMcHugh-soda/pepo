@@ -10,7 +10,7 @@ import (
 )
 
 const addThemeToAction = `-- name: AddThemeToAction :exec
-INSERT INTO action_themes (action_id, theme_id)
+INSERT INTO action_theme (action_id, theme_id)
 VALUES (x2b($1), x2b($2))
 `
 
@@ -26,7 +26,7 @@ func (q *Queries) AddThemeToAction(ctx context.Context, arg AddThemeToActionPara
 
 const listActionsByThemeID = `-- name: ListActionsByThemeID :many
 SELECT action.id, action.person_id, action.occurred_at, action.description, action."references", action.valence, action.created_at, action.updated_at
-FROM action_themes at
+FROM action_theme at
 JOIN action ON at.action_id = action.id
 WHERE at.theme_id = x2b($1)
 ORDER BY action.created_at DESC
@@ -77,7 +77,7 @@ func (q *Queries) ListActionsByThemeID(ctx context.Context, arg ListActionsByThe
 
 const listThemesByActionID = `-- name: ListThemesByActionID :many
 SELECT theme.id, theme.person_id, theme.text, theme.created_at, theme.updated_at
-FROM action_themes at
+FROM action_theme at
 JOIN theme ON at.theme_id = theme.id
 WHERE at.action_id = x2b($1)
 ORDER BY theme.created_at DESC
@@ -124,7 +124,7 @@ func (q *Queries) ListThemesByActionID(ctx context.Context, arg ListThemesByActi
 }
 
 const removeThemeFromAction = `-- name: RemoveThemeFromAction :exec
-DELETE FROM action_themes
+DELETE FROM action_theme
 WHERE action_id = x2b($1) AND theme_id = x2b($2)
 `
 
