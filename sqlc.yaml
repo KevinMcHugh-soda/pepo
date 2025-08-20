@@ -31,3 +31,11 @@ sql:
             go_type: *xid
           - column: "action.person_id"
             go_type: *xid
+          - column: "theme.id"
+            go_type: *xid
+          - column: "theme.person_id"
+            go_type: *xid
+          - column: "action_themes.action_id"
+            go_type: *xid
+          - column: "action_themes.theme_id"
+            go_type: *xid

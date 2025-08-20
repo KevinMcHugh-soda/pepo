@@ -82,6 +82,13 @@ type Action struct {
 	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
 }
 
+type ActionTheme struct {
+	ActionID  xidb.ID   `db:"action_id" json:"action_id"`
+	ThemeID   xidb.ID   `db:"theme_id" json:"theme_id"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
 type Person struct {
 	ID        xidb.ID   `db:"id" json:"id"`
 	Name      string    `db:"name" json:"name"`
@@ -91,4 +98,12 @@ type Person struct {
 
 type SchemaMigration struct {
 	Version string `db:"version" json:"version"`
+}
+
+type Theme struct {
+	ID        xidb.ID   `db:"id" json:"id"`
+	PersonID  xidb.ID   `db:"person_id" json:"person_id"`
+	Text      string    `db:"text" json:"text"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }

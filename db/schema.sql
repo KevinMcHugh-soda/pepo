@@ -160,6 +160,18 @@ CREATE TABLE public.action (
 
 
 --
+-- Name: action_theme; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.action_theme (
+    action_id bytea NOT NULL,
+    theme_id bytea NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: person; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -182,11 +194,33 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: theme; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.theme (
+    id bytea NOT NULL,
+    person_id bytea NOT NULL,
+    text text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT theme_text_check CHECK ((length(TRIM(BOTH FROM text)) > 0))
+);
+
+
+--
 -- Name: action action_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.action
     ADD CONSTRAINT action_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: action_theme action_theme_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.action_theme
+    ADD CONSTRAINT action_theme_pkey PRIMARY KEY (action_id, theme_id);
 
 
 --
@@ -203,6 +237,14 @@ ALTER TABLE ONLY public.person
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: theme theme_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.theme
+    ADD CONSTRAINT theme_pkey PRIMARY KEY (id);
 
 
 --
@@ -227,6 +269,27 @@ CREATE INDEX idx_action_person_id ON public.action USING btree (person_id);
 
 
 --
+-- Name: idx_action_theme_action_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_action_theme_action_id ON public.action_theme USING btree (action_id);
+
+
+--
+-- Name: idx_action_theme_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_action_theme_created_at ON public.action_theme USING btree (created_at);
+
+
+--
+-- Name: idx_action_theme_theme_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_action_theme_theme_id ON public.action_theme USING btree (theme_id);
+
+
+--
 -- Name: idx_action_valence; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -248,6 +311,27 @@ CREATE INDEX idx_person_name ON public.person USING btree (name);
 
 
 --
+-- Name: idx_theme_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_theme_created_at ON public.theme USING btree (created_at);
+
+
+--
+-- Name: idx_theme_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_theme_person_id ON public.theme USING btree (person_id);
+
+
+--
+-- Name: action_theme update_action_theme_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_action_theme_updated_at BEFORE UPDATE ON public.action_theme FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
 -- Name: action update_action_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -262,11 +346,42 @@ CREATE TRIGGER update_person_updated_at BEFORE UPDATE ON public.person FOR EACH 
 
 
 --
+-- Name: theme update_theme_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_theme_updated_at BEFORE UPDATE ON public.theme FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
 -- Name: action action_person_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.action
     ADD CONSTRAINT action_person_id_fkey FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
+
+
+--
+-- Name: action_theme action_theme_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.action_theme
+    ADD CONSTRAINT action_theme_action_id_fkey FOREIGN KEY (action_id) REFERENCES public.action(id) ON DELETE CASCADE;
+
+
+--
+-- Name: action_theme action_theme_theme_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.action_theme
+    ADD CONSTRAINT action_theme_theme_id_fkey FOREIGN KEY (theme_id) REFERENCES public.theme(id) ON DELETE CASCADE;
+
+
+--
+-- Name: theme theme_person_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.theme
+    ADD CONSTRAINT theme_person_id_fkey FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
 
 
 --
@@ -281,4 +396,5 @@ ALTER TABLE ONLY public.action
 INSERT INTO public.schema_migrations (version) VALUES
     ('20250730100649'),
     ('20250730152732'),
-    ('20250730204830');
+    ('20250730204830'),
+    ('20250730221000');
