@@ -10,4 +10,5 @@ This repository contains a Go-based web application for tracking performance of 
 
 - Format Go code with `go fmt ./...` before committing.
 - Run tests with `go test ./...` (or `make test`) to ensure all tests pass.
-
+- Table names are singular, eg action, person.
+- API routes are plural, eg GET /actions, GET /people
