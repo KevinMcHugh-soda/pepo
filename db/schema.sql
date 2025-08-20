@@ -383,6 +383,156 @@ ALTER TABLE ONLY public.action_theme
 ALTER TABLE ONLY public.theme
     ADD CONSTRAINT theme_person_id_fkey FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
 
+--
+-- Name: conversation; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.conversation (
+    id bytea NOT NULL,
+    description text NOT NULL,
+    occurred_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT conversation_description_check CHECK ((length(TRIM(BOTH FROM description)) > 0))
+);
+
+--
+-- Name: action_conversation; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.action_conversation (
+    action_id bytea NOT NULL,
+    conversation_id bytea NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+--
+-- Name: conversation_theme; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.conversation_theme (
+    conversation_id bytea NOT NULL,
+    theme_id bytea NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+--
+-- Name: conversation conversation_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.conversation
+    ADD CONSTRAINT conversation_pkey PRIMARY KEY (id);
+
+--
+-- Name: action_conversation action_conversation_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.action_conversation
+    ADD CONSTRAINT action_conversation_pkey PRIMARY KEY (action_id, conversation_id);
+
+--
+-- Name: conversation_theme conversation_theme_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.conversation_theme
+    ADD CONSTRAINT conversation_theme_pkey PRIMARY KEY (conversation_id, theme_id);
+
+--
+-- Name: idx_conversation_occurred_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_conversation_occurred_at ON public.conversation USING btree (occurred_at DESC);
+
+--
+-- Name: idx_conversation_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_conversation_created_at ON public.conversation USING btree (created_at);
+
+--
+-- Name: idx_action_conversation_action_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_action_conversation_action_id ON public.action_conversation USING btree (action_id);
+
+--
+-- Name: idx_action_conversation_conversation_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_action_conversation_conversation_id ON public.action_conversation USING btree (conversation_id);
+
+--
+-- Name: idx_action_conversation_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_action_conversation_created_at ON public.action_conversation USING btree (created_at);
+
+--
+-- Name: idx_conversation_theme_conversation_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_conversation_theme_conversation_id ON public.conversation_theme USING btree (conversation_id);
+
+--
+-- Name: idx_conversation_theme_theme_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_conversation_theme_theme_id ON public.conversation_theme USING btree (theme_id);
+
+--
+-- Name: idx_conversation_theme_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_conversation_theme_created_at ON public.conversation_theme USING btree (created_at);
+
+--
+-- Name: conversation update_conversation_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_conversation_updated_at BEFORE UPDATE ON public.conversation FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+--
+-- Name: action_conversation update_action_conversation_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_action_conversation_updated_at BEFORE UPDATE ON public.action_conversation FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+--
+-- Name: conversation_theme update_conversation_theme_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_conversation_theme_updated_at BEFORE UPDATE ON public.conversation_theme FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+--
+-- Name: action_conversation action_conversation_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.action_conversation
+    ADD CONSTRAINT action_conversation_action_id_fkey FOREIGN KEY (action_id) REFERENCES public.action(id) ON DELETE CASCADE;
+
+--
+-- Name: action_conversation action_conversation_conversation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.action_conversation
+    ADD CONSTRAINT action_conversation_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.conversation(id) ON DELETE CASCADE;
+
+--
+-- Name: conversation_theme conversation_theme_conversation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.conversation_theme
+    ADD CONSTRAINT conversation_theme_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.conversation(id) ON DELETE CASCADE;
+
+--
+-- Name: conversation_theme conversation_theme_theme_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.conversation_theme
+    ADD CONSTRAINT conversation_theme_theme_id_fkey FOREIGN KEY (theme_id) REFERENCES public.theme(id) ON DELETE CASCADE;
+
 
 --
 -- PostgreSQL database dump complete
@@ -397,4 +547,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250730100649'),
     ('20250730152732'),
     ('20250730204830'),
-    ('20250730221000');
+    ('20250730221000'),
+    ('20250730230000');
