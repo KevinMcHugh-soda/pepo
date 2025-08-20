@@ -4,15 +4,29 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"net/http"
+	"strings"
 
 	"github.com/rs/xid"
 
 	"pepo/internal/api"
 	"pepo/internal/db"
+	"pepo/internal/middleware"
+	"pepo/templates"
 )
 
 type ActionHandler struct {
 	queries *db.Queries
+}
+
+func getRequestFromContext(ctx context.Context) *http.Request {
+	if req, ok := ctx.Value(middleware.HTTPRequestKey).(*http.Request); ok {
+		return req
+	}
+	if req, ok := ctx.Value("http_request").(*http.Request); ok {
+		return req
+	}
+	return nil
 }
 
 func NewActionHandler(queries *db.Queries) *ActionHandler {
@@ -73,6 +87,35 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 			Message: "Failed to create action",
 			Code:    "INTERNAL_ERROR",
 		}, nil
+	}
+
+	// Handle themes from original form request
+	if r := getRequestFromContext(ctx); r != nil {
+		if err := r.ParseForm(); err == nil {
+			themes := r.Form["themes"]
+			newTheme := strings.TrimSpace(r.FormValue("new_theme"))
+			if newTheme != "" {
+				themeID := xid.New().String()
+				_, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
+					XidStr:   themeID,
+					XidStr_2: req.PersonID,
+					Text:     newTheme,
+				})
+				if err != nil {
+					log.Printf("Error creating theme: %v", err)
+				} else {
+					themes = append(themes, themeID)
+				}
+			}
+			for _, tID := range themes {
+				if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
+					XidStr:   actionID,
+					XidStr_2: tID,
+				}); err != nil {
+					log.Printf("Error adding theme to action: %v", err)
+				}
+			}
+		}
 	}
 
 	// Convert to API response
@@ -253,6 +296,61 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 		}, nil
 	}
 
+	// Update themes based on form data
+	if r := getRequestFromContext(ctx); r != nil {
+		if err := r.ParseForm(); err == nil {
+			selected := map[string]bool{}
+			for _, t := range r.Form["themes"] {
+				selected[t] = true
+			}
+			newTheme := strings.TrimSpace(r.FormValue("new_theme"))
+			if newTheme != "" {
+				themeID := xid.New().String()
+				_, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
+					XidStr:   themeID,
+					XidStr_2: req.PersonID,
+					Text:     newTheme,
+				})
+				if err != nil {
+					log.Printf("Error creating theme: %v", err)
+				} else {
+					selected[themeID] = true
+				}
+			}
+
+			existingRows, err := h.queries.ListThemesByActionID(ctx, db.ListThemesByActionIDParams{
+				XidStr: params.ID,
+				Limit:  100,
+				Offset: 0,
+			})
+			if err == nil {
+				existing := map[string]bool{}
+				for _, row := range existingRows {
+					id := row.Theme.ID.String()
+					existing[id] = true
+					if !selected[id] {
+						if err := h.queries.RemoveThemeFromAction(ctx, db.RemoveThemeFromActionParams{
+							XidStr:   params.ID,
+							XidStr_2: id,
+						}); err != nil {
+							log.Printf("Error removing theme from action: %v", err)
+						}
+					}
+				}
+				for id := range selected {
+					if !existing[id] {
+						if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
+							XidStr:   params.ID,
+							XidStr_2: id,
+						}); err != nil {
+							log.Printf("Error adding theme to action: %v", err)
+						}
+					}
+				}
+			}
+		}
+	}
+
 	apiAction := &api.Action{
 		ID:          action.ID.String(),
 		PersonID:    action.PersonID.String(),
@@ -349,4 +447,51 @@ func (h *ActionHandler) GetPersonActions(ctx context.Context, params api.GetPers
 		Actions: apiActions,
 		Total:   int(total),
 	}, nil
+}
+
+func (h *ActionHandler) HandleGetThemesForSelect(w http.ResponseWriter, r *http.Request) {
+	personID := r.URL.Query().Get("person_id")
+	if personID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.ThemeSelectError().Render(r.Context(), w)
+		return
+	}
+
+	selected := map[string]bool{}
+	if actionID := r.URL.Query().Get("action_id"); actionID != "" {
+		rows, err := h.queries.ListThemesByActionID(r.Context(), db.ListThemesByActionIDParams{
+			XidStr: actionID,
+			Limit:  100,
+			Offset: 0,
+		})
+		if err == nil {
+			for _, row := range rows {
+				selected[row.Theme.ID.String()] = true
+			}
+		}
+	}
+
+	rows, err := h.queries.ListThemesByPersonID(r.Context(), db.ListThemesByPersonIDParams{
+		XidStr: personID,
+		Limit:  100,
+		Offset: 0,
+	})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templates.ThemeSelectError().Render(r.Context(), w)
+		return
+	}
+
+	themes := make([]templates.Theme, len(rows))
+	for i, row := range rows {
+		t := row.Theme
+		themes[i] = templates.Theme{
+			ID:       t.ID.String(),
+			Text:     t.Text,
+			Selected: selected[t.ID.String()],
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	templates.ThemeSelectOptions(themes).Render(r.Context(), w)
 }

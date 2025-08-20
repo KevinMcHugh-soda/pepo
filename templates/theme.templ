@@ -1,0 +1,25 @@
+package templates
+
+type Theme struct {
+        ID       string `json:"id"`
+        Text     string `json:"text"`
+        Selected bool   `json:"selected"`
+}
+
+templ ThemeSelectOptions(themes []Theme) {
+        if len(themes) == 0 {
+                <option value="">No themes</option>
+        } else {
+                for _, theme := range themes {
+                        <option value={ theme.ID } selected?={ theme.Selected }>{ theme.Text }</option>
+                }
+        }
+}
+
+templ ThemeSelectError() {
+        <option value="">Error loading themes</option>
+}
+
+templ ThemeSelectLoading() {
+        <option value="">Loading themes...</option>
+}
