@@ -321,7 +321,8 @@ func (h *ContentNegotiatingHandler) GetActionById(ctx context.Context, params ap
 		responseType := h.determineResponseType(req)
 
 		if responseType == "text/html" {
-			// Handle HTML response
+			format := req.URL.Query().Get("format")
+
 			switch jsonResult := result.(type) {
 			case *api.Action:
 				// Convert API action to template action
@@ -335,6 +336,12 @@ func (h *ContentNegotiatingHandler) GetActionById(ctx context.Context, params ap
 					CreatedAt:   jsonResult.CreatedAt,
 					UpdatedAt:   jsonResult.UpdatedAt,
 					PersonName:  jsonResult.PersonName.Value,
+				}
+
+				if format == "edit" {
+					return &api.GetActionByIdOKTextHTML{
+						Data: renderTemplate(templates.EditActionForm(templateAction)),
+					}, nil
 				}
 
 				// Render template and return HTML response
