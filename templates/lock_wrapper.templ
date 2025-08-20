@@ -1,0 +1,40 @@
+package templates
+
+templ LockWrapper() {
+    <div>
+        { children... }
+        <div id="lock-overlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+            <div class="text-white text-2xl">Press r to resume</div>
+        </div>
+        <script>
+                (function() {
+                        const overlay = document.getElementById('lock-overlay');
+                        let timer;
+                        function startTimer() {
+                                timer = setTimeout(() => {
+                                        overlay.classList.remove('hidden');
+                                }, 60000);
+                        }
+                        function resetTimer() {
+                                clearTimeout(timer);
+                                overlay.classList.add('hidden');
+                                startTimer();
+                        }
+                        ['mousemove','keydown','mousedown','touchstart'].forEach(event => {
+                                document.addEventListener(event, () => {
+                                        if (overlay.classList.contains('hidden')) {
+                                                resetTimer();
+                                        }
+                                });
+                        });
+                        document.addEventListener('keydown', (e) => {
+                                if (!overlay.classList.contains('hidden') && e.key === 'r') {
+                                        resetTimer();
+                                }
+                        });
+                        startTimer();
+                })();
+        </script>
+    </div>
+}
+
