@@ -3,7 +3,7 @@ package templates
 templ LockWrapper() {
     <div>
         { children... }
-        <div id="lock-overlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+        <div id="lock-overlay" class="hidden fixed inset-0 flex items-center justify-center bg-gray-900 z-[1000]">
             <div class="text-white text-2xl">Press r to resume</div>
         </div>
         <script>
