@@ -44,8 +44,11 @@ go.work
 logs/
 
 # Generated code
-internal/api/
-*_templ.go
+# Previously, generated API and templ files were ignored. We now track them in
+# version control so that `go test` and other tooling can run without requiring
+# code generation.
+# internal/api/
+# *_templ.go
 
 # Temporary files
 tmp/
