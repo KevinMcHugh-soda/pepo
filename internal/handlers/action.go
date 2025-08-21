@@ -4,13 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
-	"strings"
 
 	"github.com/rs/xid"
 
 	"pepo/internal/api"
 	"pepo/internal/db"
-	"pepo/internal/middleware"
 	"pepo/templates"
 
 	"go.uber.org/zap"
@@ -18,16 +16,6 @@ import (
 
 type ActionHandler struct {
 	queries *db.Queries
-}
-
-func getRequestFromContext(ctx context.Context) *http.Request {
-	if req, ok := ctx.Value(middleware.HTTPRequestKey).(*http.Request); ok {
-		return req
-	}
-	if req, ok := ctx.Value("http_request").(*http.Request); ok {
-		return req
-	}
-	return nil
 }
 
 func NewActionHandler(queries *db.Queries) *ActionHandler {
@@ -82,38 +70,17 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 		}, nil
 	}
 
-	// Handle themes from original form request
-	if r := getRequestFromContext(ctx); r != nil {
-		if err := r.ParseForm(); err == nil {
-			themes := r.Form["themes"]
-			newTheme := strings.TrimSpace(r.FormValue("new_theme"))
-			if newTheme != "" {
-				themeID := xid.New().String()
-				if _, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
-					ID:       themeID,
-					PersonID: req.PersonID,
-					Text:     newTheme,
-				}); err != nil {
-					zap.L().Error("error creating theme", zap.Error(err))
-					return &api.CreateActionInternalServerError{
-						Message: "Failed to create theme",
-						Code:    "INTERNAL_ERROR",
-					}, nil
-				}
-				themes = append(themes, themeID)
-			}
-			for _, tID := range themes {
-				if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
-					ActionID: actionID,
-					ThemeID:  tID,
-				}); err != nil {
-					zap.L().Error("error adding theme to action", zap.Error(err))
-					return &api.CreateActionInternalServerError{
-						Message: "Failed to associate theme",
-						Code:    "INTERNAL_ERROR",
-					}, nil
-				}
-			}
+	// Associate provided themes with the new action
+	for _, tID := range req.Themes {
+		if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
+			ActionID: actionID,
+			ThemeID:  tID,
+		}); err != nil {
+			zap.L().Error("error adding theme to action", zap.Error(err))
+			return &api.CreateActionInternalServerError{
+				Message: "Failed to associate theme",
+				Code:    "INTERNAL_ERROR",
+			}, nil
 		}
 	}
 
@@ -295,66 +262,46 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 		}, nil
 	}
 
-	// Update themes based on form data
-	if r := getRequestFromContext(ctx); r != nil {
-		if err := r.ParseForm(); err == nil {
-			selected := map[string]bool{}
-			for _, t := range r.Form["themes"] {
-				selected[t] = true
-			}
-			newTheme := strings.TrimSpace(r.FormValue("new_theme"))
-			if newTheme != "" {
-				themeID := xid.New().String()
-				if _, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
-					ID:       themeID,
-					PersonID: req.PersonID,
-					Text:     newTheme,
+	// Update themes based on request data
+	selected := map[string]bool{}
+	for _, t := range req.Themes {
+		selected[t] = true
+	}
+
+	existingRows, err := h.queries.ListThemesByActionID(ctx, db.ListThemesByActionIDParams{
+		ActionID: params.ID,
+		Offset:   0,
+		Limit:    100,
+	})
+	if err == nil {
+		existing := map[string]bool{}
+		for _, row := range existingRows {
+			id := row.Theme.ID.String()
+			existing[id] = true
+			if !selected[id] {
+				if err := h.queries.RemoveThemeFromAction(ctx, db.RemoveThemeFromActionParams{
+					ActionID: params.ID,
+					ThemeID:  id,
 				}); err != nil {
-					zap.L().Error("error creating theme", zap.Error(err))
+					zap.L().Error("error removing theme from action", zap.Error(err))
 					return &api.UpdateActionInternalServerError{
-						Message: "Failed to create theme",
+						Message: "Failed to update themes",
 						Code:    "INTERNAL_ERROR",
 					}, nil
 				}
-				selected[themeID] = true
 			}
-
-			existingRows, err := h.queries.ListThemesByActionID(ctx, db.ListThemesByActionIDParams{
-				ActionID: params.ID,
-				Offset:   0,
-				Limit:    100,
-			})
-			if err == nil {
-				existing := map[string]bool{}
-				for _, row := range existingRows {
-					id := row.Theme.ID.String()
-					existing[id] = true
-					if !selected[id] {
-						if err := h.queries.RemoveThemeFromAction(ctx, db.RemoveThemeFromActionParams{
-							ActionID: params.ID,
-							ThemeID:  id,
-						}); err != nil {
-							zap.L().Error("error removing theme from action", zap.Error(err))
-							return &api.UpdateActionInternalServerError{
-								Message: "Failed to update themes",
-								Code:    "INTERNAL_ERROR",
-							}, nil
-						}
-					}
-				}
-				for id := range selected {
-					if !existing[id] {
-						if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
-							ActionID: params.ID,
-							ThemeID:  id,
-						}); err != nil {
-							zap.L().Error("error adding theme to action", zap.Error(err))
-							return &api.UpdateActionInternalServerError{
-								Message: "Failed to update themes",
-								Code:    "INTERNAL_ERROR",
-							}, nil
-						}
-					}
+		}
+		for id := range selected {
+			if !existing[id] {
+				if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
+					ActionID: params.ID,
+					ThemeID:  id,
+				}); err != nil {
+					zap.L().Error("error adding theme to action", zap.Error(err))
+					return &api.UpdateActionInternalServerError{
+						Message: "Failed to update themes",
+						Code:    "INTERNAL_ERROR",
+					}, nil
 				}
 			}
 		}

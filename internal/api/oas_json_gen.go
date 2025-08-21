@@ -391,14 +391,25 @@ func (s *CreateActionRequest) encodeFields(e *jx.Encoder) {
 		e.FieldStart("valence")
 		s.Valence.Encode(e)
 	}
+	{
+		if s.Themes != nil {
+			e.FieldStart("themes")
+			e.ArrStart()
+			for _, elem := range s.Themes {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
 }
 
-var jsonFieldsNameOfCreateActionRequest = [5]string{
+var jsonFieldsNameOfCreateActionRequest = [6]string{
 	0: "person_id",
 	1: "occurred_at",
 	2: "description",
 	3: "references",
 	4: "valence",
+	5: "themes",
 }
 
 // Decode decodes CreateActionRequest from json.
@@ -465,6 +476,25 @@ func (s *CreateActionRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"valence\"")
+			}
+		case "themes":
+			if err := func() error {
+				s.Themes = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.Themes = append(s.Themes, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"themes\"")
 			}
 		default:
 			return d.Skip()
@@ -1976,14 +2006,25 @@ func (s *UpdateActionRequest) encodeFields(e *jx.Encoder) {
 		e.FieldStart("valence")
 		s.Valence.Encode(e)
 	}
+	{
+		if s.Themes != nil {
+			e.FieldStart("themes")
+			e.ArrStart()
+			for _, elem := range s.Themes {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
 }
 
-var jsonFieldsNameOfUpdateActionRequest = [5]string{
+var jsonFieldsNameOfUpdateActionRequest = [6]string{
 	0: "person_id",
 	1: "occurred_at",
 	2: "description",
 	3: "references",
 	4: "valence",
+	5: "themes",
 }
 
 // Decode decodes UpdateActionRequest from json.
@@ -2050,6 +2091,25 @@ func (s *UpdateActionRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"valence\"")
+			}
+		case "themes":
+			if err := func() error {
+				s.Themes = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.Themes = append(s.Themes, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"themes\"")
 			}
 		default:
 			return d.Skip()
