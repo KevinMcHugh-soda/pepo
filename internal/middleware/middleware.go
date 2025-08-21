@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 // LoggingMiddleware logs HTTP requests with method, path, status code, and duration
@@ -20,7 +21,11 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 
 		// Log the request
 		duration := time.Since(start)
-		log.Printf("%s %s %d %v", r.Method, r.URL.Path, wrapped.statusCode, duration)
+		zap.L().Info("request completed",
+			zap.String("method", r.Method),
+			zap.String("path", r.URL.Path),
+			zap.Int("status", wrapped.statusCode),
+			zap.Duration("duration", duration))
 	})
 }
 
@@ -29,7 +34,7 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				log.Printf("Panic recovered: %v\n%s", err, debug.Stack())
+				zap.L().Error("panic recovered", zap.Any("error", err), zap.String("stack", string(debug.Stack())))
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			}
 		}()

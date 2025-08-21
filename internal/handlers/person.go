@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"log"
 	"net/http"
 	"time"
 
@@ -12,6 +11,8 @@ import (
 	"pepo/internal/api"
 	"pepo/internal/db"
 	"pepo/templates"
+
+	"go.uber.org/zap"
 )
 
 type PersonHandler struct {
@@ -44,7 +45,7 @@ func (h *PersonHandler) CreatePerson(ctx context.Context, req *api.CreatePersonR
 		Name:   req.Name,
 	})
 	if err != nil {
-		log.Printf("Error creating person: %v", err)
+		zap.L().Error("error creating person", zap.Error(err))
 		return &api.CreatePersonInternalServerError{
 			Message: "Failed to create person",
 			Code:    "INTERNAL_ERROR",
@@ -69,7 +70,7 @@ func (h *PersonHandler) GetPersonById(ctx context.Context, params api.GetPersonB
 				Code:    "NOT_FOUND",
 			}, nil
 		}
-		log.Printf("Error getting person: %v", err)
+		zap.L().Error("error getting person", zap.Error(err))
 		return &api.GetPersonByIdInternalServerError{
 			Message: "Failed to get person",
 			Code:    "INTERNAL_ERROR",
@@ -98,7 +99,7 @@ func (h *PersonHandler) GetPersons(ctx context.Context, params api.GetPersonsPar
 	// Get total count
 	total, err := h.queries.CountPersons(ctx)
 	if err != nil {
-		log.Printf("Error counting persons: %v", err)
+		zap.L().Error("error counting persons", zap.Error(err))
 		return &api.Error{
 			Message: "Failed to count people",
 			Code:    "INTERNAL_ERROR",
@@ -111,7 +112,7 @@ func (h *PersonHandler) GetPersons(ctx context.Context, params api.GetPersonsPar
 		Offset: offset,
 	})
 	if err != nil {
-		log.Printf("Error listing persons: %v", err)
+		zap.L().Error("error listing persons", zap.Error(err))
 		return &api.Error{
 			Message: "Failed to list people",
 			Code:    "INTERNAL_ERROR",
@@ -152,7 +153,7 @@ func (h *PersonHandler) GetPersonsWithLastAction(ctx context.Context, params api
 		Offset: offset,
 	})
 	if err != nil {
-		log.Printf("Error listing persons with last action: %v", err)
+		zap.L().Error("error listing persons with last action", zap.Error(err))
 		return nil, err
 	}
 
@@ -206,7 +207,7 @@ func (h *PersonHandler) UpdatePerson(ctx context.Context, req *api.UpdatePersonR
 				Code:    "NOT_FOUND",
 			}, nil
 		}
-		log.Printf("Error updating person: %v", err)
+		zap.L().Error("error updating person", zap.Error(err))
 		return &api.UpdatePersonInternalServerError{
 			Message: "Failed to update person",
 			Code:    "INTERNAL_ERROR",
@@ -224,7 +225,7 @@ func (h *PersonHandler) UpdatePerson(ctx context.Context, req *api.UpdatePersonR
 func (h *PersonHandler) DeletePerson(ctx context.Context, params api.DeletePersonParams) (api.DeletePersonRes, error) {
 	err := h.queries.DeletePerson(ctx, params.ID)
 	if err != nil {
-		log.Printf("Error deleting person: %v", err)
+		zap.L().Error("error deleting person", zap.Error(err))
 		return &api.DeletePersonInternalServerError{
 			Message: "Failed to delete person",
 			Code:    "INTERNAL_ERROR",

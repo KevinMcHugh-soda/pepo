@@ -3,12 +3,13 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 
 	_ "github.com/lib/pq"
 
 	"pepo/internal/db"
+
+	"go.uber.org/zap"
 )
 
 // ConnectionConfig holds database connection configuration
@@ -53,8 +54,10 @@ func Initialize(databaseURL string, config *ConnectionConfig) (*sql.DB, *db.Quer
 	// Initialize queries
 	queries := db.New(database)
 
-	log.Printf("Database connection established (max_open_conns=%d, max_idle_conns=%d, conn_max_lifetime=%v)",
-		config.MaxOpenConns, config.MaxIdleConns, config.ConnMaxLifetime)
+	zap.L().Info("database connection established",
+		zap.Int("max_open_conns", config.MaxOpenConns),
+		zap.Int("max_idle_conns", config.MaxIdleConns),
+		zap.Duration("conn_max_lifetime", config.ConnMaxLifetime))
 
 	return database, queries, nil
 }

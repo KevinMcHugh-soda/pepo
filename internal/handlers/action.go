@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"log"
 	"net/http"
 	"strings"
 
@@ -13,6 +12,8 @@ import (
 	"pepo/internal/db"
 	"pepo/internal/middleware"
 	"pepo/templates"
+
+	"go.uber.org/zap"
 )
 
 type ActionHandler struct {
@@ -82,7 +83,7 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 	})
 	action := row.Action
 	if err != nil {
-		log.Printf("Error creating action: %v", err)
+		zap.L().Error("error creating action", zap.Error(err))
 		return &api.CreateActionInternalServerError{
 			Message: "Failed to create action",
 			Code:    "INTERNAL_ERROR",
@@ -101,7 +102,7 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 					XidStr_2: req.PersonID,
 					Text:     newTheme,
 				}); err != nil {
-					log.Printf("Error creating theme: %v", err)
+					zap.L().Error("error creating theme", zap.Error(err))
 					return &api.CreateActionInternalServerError{
 						Message: "Failed to create theme",
 						Code:    "INTERNAL_ERROR",
@@ -114,7 +115,7 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 					XidStr:   actionID,
 					XidStr_2: tID,
 				}); err != nil {
-					log.Printf("Error adding theme to action: %v", err)
+					zap.L().Error("error adding theme to action", zap.Error(err))
 					return &api.CreateActionInternalServerError{
 						Message: "Failed to associate theme",
 						Code:    "INTERNAL_ERROR",
@@ -152,7 +153,7 @@ func (h *ActionHandler) GetActionById(ctx context.Context, params api.GetActionB
 				Code:    "NOT_FOUND",
 			}, nil
 		}
-		log.Printf("Error getting action: %v", err)
+		zap.L().Error("error getting action", zap.Error(err))
 		return &api.GetActionByIdInternalServerError{
 			Message: "Failed to get action",
 			Code:    "INTERNAL_ERROR",
@@ -257,7 +258,7 @@ func (h *ActionHandler) GetActions(ctx context.Context, params api.GetActionsPar
 	}
 
 	if err != nil {
-		log.Printf("Error listing actions: %v", err)
+		zap.L().Error("error listing actions", zap.Error(err))
 		return &api.Error{
 			Message: "Failed to list actions",
 			Code:    "INTERNAL_ERROR",
@@ -295,7 +296,7 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 				Code:    "NOT_FOUND",
 			}, nil
 		}
-		log.Printf("Error updating action: %v", err)
+		zap.L().Error("error updating action", zap.Error(err))
 		return &api.UpdateActionInternalServerError{
 			Message: "Failed to update action",
 			Code:    "INTERNAL_ERROR",
@@ -317,7 +318,7 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 					XidStr_2: req.PersonID,
 					Text:     newTheme,
 				}); err != nil {
-					log.Printf("Error creating theme: %v", err)
+					zap.L().Error("error creating theme", zap.Error(err))
 					return &api.UpdateActionInternalServerError{
 						Message: "Failed to create theme",
 						Code:    "INTERNAL_ERROR",
@@ -341,7 +342,7 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 							XidStr:   params.ID,
 							XidStr_2: id,
 						}); err != nil {
-							log.Printf("Error removing theme from action: %v", err)
+							zap.L().Error("error removing theme from action", zap.Error(err))
 							return &api.UpdateActionInternalServerError{
 								Message: "Failed to update themes",
 								Code:    "INTERNAL_ERROR",
@@ -355,7 +356,7 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 							XidStr:   params.ID,
 							XidStr_2: id,
 						}); err != nil {
-							log.Printf("Error adding theme to action: %v", err)
+							zap.L().Error("error adding theme to action", zap.Error(err))
 							return &api.UpdateActionInternalServerError{
 								Message: "Failed to update themes",
 								Code:    "INTERNAL_ERROR",
@@ -387,7 +388,7 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 func (h *ActionHandler) DeleteAction(ctx context.Context, params api.DeleteActionParams) (api.DeleteActionRes, error) {
 	err := h.queries.DeleteAction(ctx, params.ID)
 	if err != nil {
-		log.Printf("Error deleting action: %v", err)
+		zap.L().Error("error deleting action", zap.Error(err))
 		return &api.DeleteActionInternalServerError{
 			Message: "Failed to delete action",
 			Code:    "INTERNAL_ERROR",
@@ -442,7 +443,7 @@ func (h *ActionHandler) GetPersonActions(ctx context.Context, params api.GetPers
 	}
 
 	if err != nil {
-		log.Printf("Error getting person actions: %v", err)
+		zap.L().Error("error getting person actions", zap.Error(err))
 		return &api.GetPersonActionsInternalServerError{
 			Message: "Failed to get person actions",
 			Code:    "INTERNAL_ERROR",
@@ -452,7 +453,7 @@ func (h *ActionHandler) GetPersonActions(ctx context.Context, params api.GetPers
 	// Get total count for this person
 	total, err := h.queries.CountActionsByPersonID(ctx, params.ID)
 	if err != nil {
-		log.Printf("Error counting person actions: %v", err)
+		zap.L().Error("error counting person actions", zap.Error(err))
 		return &api.GetPersonActionsInternalServerError{
 			Message: "Failed to count person actions",
 			Code:    "INTERNAL_ERROR",

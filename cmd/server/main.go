@@ -1,52 +1,53 @@
 package main
 
 import (
-	"log"
-
 	"pepo/internal/config"
 	"pepo/internal/database"
 	"pepo/internal/handlers"
+	"pepo/internal/logging"
 	"pepo/internal/server"
 	"pepo/internal/version"
+
+	"go.uber.org/zap"
 )
 
 func main() {
-	// Print version information
+	logger, err := logging.Init()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+
 	versionInfo := version.Get()
-	log.Printf("=== %s ===", versionInfo.String())
+	zap.L().Info("version information", zap.String("version", versionInfo.String()))
 
-	// Load configuration from environment
 	cfg := config.Load()
-	log.Printf("Starting server in %s mode on port %s", cfg.Environment, cfg.Port)
+	zap.L().Info("starting server", zap.String("environment", cfg.Environment), zap.String("port", cfg.Port))
 
-	// Initialize database connection
-	log.Printf("Connecting to database...")
+	zap.L().Info("connecting to database")
 	db, queries, err := database.Initialize(cfg.DatabaseURL, database.DefaultConnectionConfig())
 	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+		zap.L().Fatal("failed to initialize database", zap.Error(err))
 	}
 	defer func() {
 		if err := database.Close(db); err != nil {
-			log.Printf("Error closing database: %v", err)
+			zap.L().Error("error closing database", zap.Error(err))
 		}
 	}()
 
-	// Create handlers
-	log.Printf("Initializing application handlers...")
+	zap.L().Info("initializing application handlers")
 	personHandler := handlers.NewPersonHandler(queries)
 	actionHandler := handlers.NewActionHandler(queries)
 	combinedAPIHandler := handlers.NewCombinedAPIHandler(personHandler, actionHandler)
 
-	// Create and configure server
-	log.Printf("Setting up HTTP server...")
+	zap.L().Info("setting up HTTP server")
 	srv, err := server.New(cfg, combinedAPIHandler, personHandler, actionHandler)
 	if err != nil {
-		log.Fatalf("Failed to create server: %v", err)
+		zap.L().Fatal("failed to create server", zap.Error(err))
 	}
 
-	// Start server with graceful shutdown
-	log.Printf("Server initialization complete, starting...")
+	zap.L().Info("server initialization complete, starting")
 	if err := srv.StartWithGracefulShutdown(); err != nil {
-		log.Fatalf("Server error: %v", err)
+		zap.L().Fatal("server error", zap.Error(err))
 	}
 }
