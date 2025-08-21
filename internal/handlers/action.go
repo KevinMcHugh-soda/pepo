@@ -96,16 +96,18 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 			newTheme := strings.TrimSpace(r.FormValue("new_theme"))
 			if newTheme != "" {
 				themeID := xid.New().String()
-				_, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
+				if _, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
 					XidStr:   themeID,
 					XidStr_2: req.PersonID,
 					Text:     newTheme,
-				})
-				if err != nil {
+				}); err != nil {
 					log.Printf("Error creating theme: %v", err)
-				} else {
-					themes = append(themes, themeID)
+					return &api.CreateActionInternalServerError{
+						Message: "Failed to create theme",
+						Code:    "INTERNAL_ERROR",
+					}, nil
 				}
+				themes = append(themes, themeID)
 			}
 			for _, tID := range themes {
 				if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
@@ -113,6 +115,10 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 					XidStr_2: tID,
 				}); err != nil {
 					log.Printf("Error adding theme to action: %v", err)
+					return &api.CreateActionInternalServerError{
+						Message: "Failed to associate theme",
+						Code:    "INTERNAL_ERROR",
+					}, nil
 				}
 			}
 		}
@@ -306,16 +312,18 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 			newTheme := strings.TrimSpace(r.FormValue("new_theme"))
 			if newTheme != "" {
 				themeID := xid.New().String()
-				_, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
+				if _, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
 					XidStr:   themeID,
 					XidStr_2: req.PersonID,
 					Text:     newTheme,
-				})
-				if err != nil {
+				}); err != nil {
 					log.Printf("Error creating theme: %v", err)
-				} else {
-					selected[themeID] = true
+					return &api.UpdateActionInternalServerError{
+						Message: "Failed to create theme",
+						Code:    "INTERNAL_ERROR",
+					}, nil
 				}
+				selected[themeID] = true
 			}
 
 			existingRows, err := h.queries.ListThemesByActionID(ctx, db.ListThemesByActionIDParams{
@@ -334,6 +342,10 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 							XidStr_2: id,
 						}); err != nil {
 							log.Printf("Error removing theme from action: %v", err)
+							return &api.UpdateActionInternalServerError{
+								Message: "Failed to update themes",
+								Code:    "INTERNAL_ERROR",
+							}, nil
 						}
 					}
 				}
@@ -344,6 +356,10 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 							XidStr_2: id,
 						}); err != nil {
 							log.Printf("Error adding theme to action: %v", err)
+							return &api.UpdateActionInternalServerError{
+								Message: "Failed to update themes",
+								Code:    "INTERNAL_ERROR",
+							}, nil
 						}
 					}
 				}
