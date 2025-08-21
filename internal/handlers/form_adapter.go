@@ -105,6 +105,23 @@ func (f *FormAdapter) ParseCreateActionRequest(r *http.Request) (*api.CreateActi
 		req.References = api.OptNilString{Value: references, Set: true}
 	}
 
+	// Parse existing theme IDs
+	if themes := r.Form["themes"]; len(themes) > 0 {
+		req.Themes = make([]string, 0, len(themes))
+		for _, t := range themes {
+			t = strings.TrimSpace(t)
+			if t != "" {
+				req.Themes = append(req.Themes, t)
+			}
+		}
+	}
+
+	// Parse new theme name
+	newTheme := strings.TrimSpace(r.FormValue("new_theme"))
+	if newTheme != "" {
+		req.NewTheme = api.NewOptString(newTheme)
+	}
+
 	return req, nil
 }
 
