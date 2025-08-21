@@ -12,3 +12,4 @@ This repository contains a Go-based web application for tracking performance of 
 - Run tests with `go test ./...` (or `make test`) to ensure all tests pass.
 - Table names are singular, eg action, person.
 - API routes are plural, eg GET /actions, GET /people
+- Name migrations using the current timestamp, e.g. `20240115093000_add_user_table.sql`.
