@@ -203,6 +203,8 @@ type CreateActionRequest struct {
 	References OptNilString `json:"references"`
 	// Emotional valence of the action.
 	Valence CreateActionRequestValence `json:"valence"`
+	// IDs of themes associated with the action.
+	Themes []string `json:"themes"`
 }
 
 // GetPersonID returns the value of PersonID.
@@ -230,6 +232,11 @@ func (s *CreateActionRequest) GetValence() CreateActionRequestValence {
 	return s.Valence
 }
 
+// GetThemes returns the value of Themes.
+func (s *CreateActionRequest) GetThemes() []string {
+	return s.Themes
+}
+
 // SetPersonID sets the value of PersonID.
 func (s *CreateActionRequest) SetPersonID(val string) {
 	s.PersonID = val
@@ -253,6 +260,11 @@ func (s *CreateActionRequest) SetReferences(val OptNilString) {
 // SetValence sets the value of Valence.
 func (s *CreateActionRequest) SetValence(val CreateActionRequestValence) {
 	s.Valence = val
+}
+
+// SetThemes sets the value of Themes.
+func (s *CreateActionRequest) SetThemes(val []string) {
+	s.Themes = val
 }
 
 // Emotional valence of the action.
@@ -1014,6 +1026,8 @@ type UpdateActionRequest struct {
 	References OptNilString `json:"references"`
 	// Whether the action was positive or negative.
 	Valence UpdateActionRequestValence `json:"valence"`
+	// IDs of themes associated with the action.
+	Themes []string `json:"themes"`
 }
 
 // GetPersonID returns the value of PersonID.
@@ -1041,6 +1055,11 @@ func (s *UpdateActionRequest) GetValence() UpdateActionRequestValence {
 	return s.Valence
 }
 
+// GetThemes returns the value of Themes.
+func (s *UpdateActionRequest) GetThemes() []string {
+	return s.Themes
+}
+
 // SetPersonID sets the value of PersonID.
 func (s *UpdateActionRequest) SetPersonID(val string) {
 	s.PersonID = val
@@ -1064,6 +1083,11 @@ func (s *UpdateActionRequest) SetReferences(val OptNilString) {
 // SetValence sets the value of Valence.
 func (s *UpdateActionRequest) SetValence(val UpdateActionRequestValence) {
 	s.Valence = val
+}
+
+// SetThemes sets the value of Themes.
+func (s *UpdateActionRequest) SetThemes(val []string) {
+	s.Themes = val
 }
 
 // Whether the action was positive or negative.

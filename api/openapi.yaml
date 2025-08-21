@@ -638,6 +638,11 @@ components:
           description: Emotional valence of the action
           enum: ["positive", "negative", "neutral"]
           example: "positive"
+        themes:
+          type: array
+          description: IDs of themes associated with the action
+          items:
+            type: string
       required:
         - person_id
         - occurred_at
@@ -672,6 +677,11 @@ components:
           description: Whether the action was positive or negative
           enum: [positive, negative]
           example: "positive"
+        themes:
+          type: array
+          description: IDs of themes associated with the action
+          items:
+            type: string
       required:
         - person_id
         - occurred_at
