@@ -72,11 +72,50 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 
 	// Associate provided themes with the new action
 	for _, tID := range req.Themes {
+		if _, err := h.queries.GetThemeByID(ctx, tID); err != nil {
+			if err == sql.ErrNoRows {
+				return &api.CreateActionBadRequest{
+					Message: "Theme not found",
+					Code:    "INVALID_THEME",
+				}, nil
+			}
+			zap.L().Error("error getting theme", zap.Error(err))
+			return &api.CreateActionInternalServerError{
+				Message: "Failed to associate theme",
+				Code:    "INTERNAL_ERROR",
+			}, nil
+		}
 		if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
 			ActionID: actionID,
 			ThemeID:  tID,
 		}); err != nil {
 			zap.L().Error("error adding theme to action", zap.Error(err))
+			return &api.CreateActionInternalServerError{
+				Message: "Failed to associate theme",
+				Code:    "INTERNAL_ERROR",
+			}, nil
+		}
+	}
+
+	// Create a new theme if provided
+	if req.NewTheme.IsSet() {
+		themeID := xid.New().String()
+		if _, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
+			ID:       themeID,
+			PersonID: req.PersonID,
+			Text:     req.NewTheme.Value,
+		}); err != nil {
+			zap.L().Error("error creating theme", zap.Error(err))
+			return &api.CreateActionInternalServerError{
+				Message: "Failed to create theme",
+				Code:    "INTERNAL_ERROR",
+			}, nil
+		}
+		if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
+			ActionID: actionID,
+			ThemeID:  themeID,
+		}); err != nil {
+			zap.L().Error("error adding new theme to action", zap.Error(err))
 			return &api.CreateActionInternalServerError{
 				Message: "Failed to associate theme",
 				Code:    "INTERNAL_ERROR",

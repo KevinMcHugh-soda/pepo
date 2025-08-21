@@ -205,6 +205,8 @@ type CreateActionRequest struct {
 	Valence CreateActionRequestValence `json:"valence"`
 	// IDs of themes associated with the action.
 	Themes []string `json:"themes"`
+	// Name of a new theme to create and associate with the action.
+	NewTheme OptString `json:"newTheme"`
 }
 
 // GetPersonID returns the value of PersonID.
@@ -237,6 +239,11 @@ func (s *CreateActionRequest) GetThemes() []string {
 	return s.Themes
 }
 
+// GetNewTheme returns the value of NewTheme.
+func (s *CreateActionRequest) GetNewTheme() OptString {
+	return s.NewTheme
+}
+
 // SetPersonID sets the value of PersonID.
 func (s *CreateActionRequest) SetPersonID(val string) {
 	s.PersonID = val
@@ -265,6 +272,11 @@ func (s *CreateActionRequest) SetValence(val CreateActionRequestValence) {
 // SetThemes sets the value of Themes.
 func (s *CreateActionRequest) SetThemes(val []string) {
 	s.Themes = val
+}
+
+// SetNewTheme sets the value of NewTheme.
+func (s *CreateActionRequest) SetNewTheme(val OptString) {
+	s.NewTheme = val
 }
 
 // Emotional valence of the action.

@@ -401,15 +401,22 @@ func (s *CreateActionRequest) encodeFields(e *jx.Encoder) {
 			e.ArrEnd()
 		}
 	}
+	{
+		if s.NewTheme.Set {
+			e.FieldStart("newTheme")
+			s.NewTheme.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfCreateActionRequest = [6]string{
+var jsonFieldsNameOfCreateActionRequest = [7]string{
 	0: "person_id",
 	1: "occurred_at",
 	2: "description",
 	3: "references",
 	4: "valence",
 	5: "themes",
+	6: "newTheme",
 }
 
 // Decode decodes CreateActionRequest from json.
@@ -495,6 +502,16 @@ func (s *CreateActionRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"themes\"")
+			}
+		case "newTheme":
+			if err := func() error {
+				s.NewTheme.Reset()
+				if err := s.NewTheme.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"newTheme\"")
 			}
 		default:
 			return d.Skip()
