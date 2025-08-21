@@ -128,6 +128,7 @@ func setupRoutes(apiServer *api.Server, personHandler *handlers.PersonHandler, a
 
 	// Legacy form handlers for HTMX compatibility (keeping for now)
 	mux.HandleFunc("/forms/people/select", personHandler.HandleGetPersonsForSelect)
+	mux.HandleFunc("/forms/themes/select", actionHandler.HandleGetThemesForSelect)
 
 	// Consolidated API routes with content negotiation (supports both JSON and HTML)
 	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiServer))
