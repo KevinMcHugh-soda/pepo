@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	mcp "github.com/mark3labs/mcp-go/mcp"
@@ -12,6 +11,9 @@ import (
 	"pepo/internal/config"
 	"pepo/internal/database"
 	"pepo/internal/db"
+	"pepo/internal/logging"
+
+	"go.uber.org/zap"
 )
 
 type ListActionsRequest struct {
@@ -32,15 +34,21 @@ type Action struct {
 }
 
 func main() {
+	logger, err := logging.Init()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+
 	cfg := config.Load()
 
 	dbConn, queries, err := database.Initialize(cfg.DatabaseURL, database.DefaultConnectionConfig())
 	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+		zap.L().Fatal("failed to initialize database", zap.Error(err))
 	}
 	defer func() {
 		if err := database.Close(dbConn); err != nil {
-			log.Printf("Error closing database: %v", err)
+			zap.L().Error("error closing database", zap.Error(err))
 		}
 	}()
 
@@ -97,6 +105,6 @@ func main() {
 	}))
 
 	if err := mcpserver.ServeStdio(s); err != nil {
-		log.Printf("Server error: %v", err)
+		zap.L().Error("server error", zap.Error(err))
 	}
 }
