@@ -73,8 +73,8 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 
 	// Create action in database
 	row, err := h.queries.CreateAction(ctx, db.CreateActionParams{
-		XidStr:      actionID,
-		XidStr_2:    req.PersonID,
+		ID:          actionID,
+		PersonID:    req.PersonID,
 		OccurredAt:  occurredAt,
 		Description: req.Description,
 		References:  sql.NullString{String: req.References.Or(""), Valid: req.References.IsSet()},
@@ -97,8 +97,8 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 			if newTheme != "" {
 				themeID := xid.New().String()
 				_, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
-					XidStr:   themeID,
-					XidStr_2: req.PersonID,
+					ID:       themeID,
+					PersonID: req.PersonID,
 					Text:     newTheme,
 				})
 				if err != nil {
@@ -109,8 +109,8 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 			}
 			for _, tID := range themes {
 				if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
-					XidStr:   actionID,
-					XidStr_2: tID,
+					ActionID: actionID,
+					ThemeID:  tID,
 				}); err != nil {
 					log.Printf("Error adding theme to action: %v", err)
 				}
@@ -189,10 +189,10 @@ func (h *ActionHandler) GetActions(ctx context.Context, params api.GetActionsPar
 	if params.PersonID.IsSet() && params.Valence.IsSet() {
 		// Filter by both person and valence
 		rows, err := h.queries.ListActionsByPersonIDAndValence(ctx, db.ListActionsByPersonIDAndValenceParams{
-			XidStr:  params.PersonID.Value,
-			Valence: db.ValenceType(params.Valence.Value),
-			Limit:   limit,
-			Offset:  offset,
+			PersonID: params.PersonID.Value,
+			Valence:  db.ValenceType(params.Valence.Value),
+			Offset:   offset,
+			Limit:    limit,
 		})
 		if err == nil {
 			apiActions = make([]api.Action, len(rows))
@@ -205,9 +205,9 @@ func (h *ActionHandler) GetActions(ctx context.Context, params api.GetActionsPar
 	} else if params.PersonID.IsSet() {
 		// Filter by person only
 		rows, err := h.queries.ListActionsByPersonID(ctx, db.ListActionsByPersonIDParams{
-			XidStr: params.PersonID.Value,
-			Limit:  limit,
-			Offset: offset,
+			PersonID: params.PersonID.Value,
+			Offset:   offset,
+			Limit:    limit,
 		})
 		if err == nil {
 			apiActions = make([]api.Action, len(rows))
@@ -221,8 +221,8 @@ func (h *ActionHandler) GetActions(ctx context.Context, params api.GetActionsPar
 		// Filter by valence only
 		rows, err := h.queries.ListActionsByValence(ctx, db.ListActionsByValenceParams{
 			Valence: db.ValenceType(params.Valence.Value),
-			Limit:   limit,
 			Offset:  offset,
+			Limit:   limit,
 		})
 		if err == nil {
 			apiActions = make([]api.Action, len(rows))
@@ -235,8 +235,8 @@ func (h *ActionHandler) GetActions(ctx context.Context, params api.GetActionsPar
 	} else {
 		// No filters
 		rows, err := h.queries.ListActions(ctx, db.ListActionsParams{
-			Limit:  limit,
 			Offset: offset,
+			Limit:  limit,
 		})
 		if err == nil {
 			apiActions = make([]api.Action, len(rows))
@@ -274,8 +274,8 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 	}
 
 	row, err := h.queries.UpdateAction(ctx, db.UpdateActionParams{
-		XidStr:      params.ID,
-		XidStr_2:    req.PersonID,
+		ID:          params.ID,
+		PersonID:    req.PersonID,
 		OccurredAt:  req.OccurredAt,
 		Description: req.Description,
 		References:  sql.NullString{String: req.References.Or(""), Valid: req.References.IsSet()},
@@ -307,8 +307,8 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 			if newTheme != "" {
 				themeID := xid.New().String()
 				_, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
-					XidStr:   themeID,
-					XidStr_2: req.PersonID,
+					ID:       themeID,
+					PersonID: req.PersonID,
 					Text:     newTheme,
 				})
 				if err != nil {
@@ -319,9 +319,9 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 			}
 
 			existingRows, err := h.queries.ListThemesByActionID(ctx, db.ListThemesByActionIDParams{
-				XidStr: params.ID,
-				Limit:  100,
-				Offset: 0,
+				ActionID: params.ID,
+				Offset:   0,
+				Limit:    100,
 			})
 			if err == nil {
 				existing := map[string]bool{}
@@ -330,8 +330,8 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 					existing[id] = true
 					if !selected[id] {
 						if err := h.queries.RemoveThemeFromAction(ctx, db.RemoveThemeFromActionParams{
-							XidStr:   params.ID,
-							XidStr_2: id,
+							ActionID: params.ID,
+							ThemeID:  id,
 						}); err != nil {
 							log.Printf("Error removing theme from action: %v", err)
 						}
@@ -340,8 +340,8 @@ func (h *ActionHandler) UpdateAction(ctx context.Context, req *api.UpdateActionR
 				for id := range selected {
 					if !existing[id] {
 						if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
-							XidStr:   params.ID,
-							XidStr_2: id,
+							ActionID: params.ID,
+							ThemeID:  id,
 						}); err != nil {
 							log.Printf("Error adding theme to action: %v", err)
 						}
@@ -397,10 +397,10 @@ func (h *ActionHandler) GetPersonActions(ctx context.Context, params api.GetPers
 
 	if params.Valence.IsSet() {
 		rows, err := h.queries.ListActionsByPersonIDAndValence(ctx, db.ListActionsByPersonIDAndValenceParams{
-			XidStr:  params.ID,
-			Valence: db.ValenceType(params.Valence.Value),
-			Limit:   limit,
-			Offset:  offset,
+			PersonID: params.ID,
+			Valence:  db.ValenceType(params.Valence.Value),
+			Offset:   offset,
+			Limit:    limit,
 		})
 		if err == nil {
 			apiActions = make([]api.Action, len(rows))
@@ -411,9 +411,9 @@ func (h *ActionHandler) GetPersonActions(ctx context.Context, params api.GetPers
 		}
 	} else {
 		rows, err := h.queries.ListActionsByPersonID(ctx, db.ListActionsByPersonIDParams{
-			XidStr: params.ID,
-			Limit:  limit,
-			Offset: offset,
+			PersonID: params.ID,
+			Offset:   offset,
+			Limit:    limit,
 		})
 		if err == nil {
 			apiActions = make([]api.Action, len(rows))
@@ -460,9 +460,9 @@ func (h *ActionHandler) HandleGetThemesForSelect(w http.ResponseWriter, r *http.
 	selected := map[string]bool{}
 	if actionID := r.URL.Query().Get("action_id"); actionID != "" {
 		rows, err := h.queries.ListThemesByActionID(r.Context(), db.ListThemesByActionIDParams{
-			XidStr: actionID,
-			Limit:  100,
-			Offset: 0,
+			ActionID: actionID,
+			Offset:   0,
+			Limit:    100,
 		})
 		if err == nil {
 			for _, row := range rows {
@@ -472,9 +472,9 @@ func (h *ActionHandler) HandleGetThemesForSelect(w http.ResponseWriter, r *http.
 	}
 
 	rows, err := h.queries.ListThemesByPersonID(r.Context(), db.ListThemesByPersonIDParams{
-		XidStr: personID,
-		Limit:  100,
-		Offset: 0,
+		PersonID: personID,
+		Offset:   0,
+		Limit:    100,
 	})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

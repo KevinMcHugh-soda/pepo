@@ -13,3 +13,4 @@ This repository contains a Go-based web application for tracking performance of 
 - Table names are singular, eg action, person.
 - API routes are plural, eg GET /actions, GET /people
 - Name migrations using the current timestamp, e.g. `20240115093000_add_user_table.sql`.
+- Use named SQL parameters (e.g., `sqlc.arg(name)`) instead of positional placeholders like `$1`.

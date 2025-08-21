@@ -1,43 +1,43 @@
 -- name: CreatePerson :one
 INSERT INTO person (id, name)
-VALUES (x2b($1), $2)
+VALUES (x2b(sqlc.arg(id)), sqlc.arg(name))
 RETURNING b2x(id) as id, name, created_at, updated_at;
 
 -- name: GetPersonByID :one
 SELECT b2x(id) as id, name, created_at, updated_at
 FROM person
-WHERE id = x2b($1);
+WHERE id = x2b(sqlc.arg(id));
 
 -- name: ListPersons :many
 SELECT b2x(id) as id, name, created_at, updated_at
 FROM person
 ORDER BY created_at DESC
-LIMIT $1 OFFSET $2;
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 -- name: CountPersons :one
 SELECT COUNT(*) FROM person;
 
 -- name: UpdatePerson :one
 UPDATE person
-SET name = $2, updated_at = NOW()
-WHERE id = x2b($1)
+SET name = sqlc.arg(name), updated_at = NOW()
+WHERE id = x2b(sqlc.arg(id))
 RETURNING b2x(id) as id, name, created_at, updated_at;
 
 -- name: DeletePerson :exec
 DELETE FROM person
-WHERE id = x2b($1);
+WHERE id = x2b(sqlc.arg(id));
 
 -- name: GetPersonByName :one
 SELECT b2x(id) as id, name, created_at, updated_at
 FROM person
-WHERE name = $1;
+WHERE name = sqlc.arg(name);
 
 -- name: SearchPersonsByName :many
 SELECT b2x(id) as id, name, created_at, updated_at
 FROM person
-WHERE name ILIKE '%' || $1 || '%'
+WHERE name ILIKE '%' || sqlc.arg('search') || '%'
 ORDER BY name
-LIMIT $2 OFFSET $3;
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 -- name: ListPersonsWithLastAction :many
 SELECT
@@ -50,4 +50,4 @@ FROM person p
 LEFT JOIN action a ON p.id = a.person_id
 GROUP BY p.id, p.name, p.created_at, p.updated_at
 ORDER BY p.created_at DESC
-LIMIT $1 OFFSET $2;
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');

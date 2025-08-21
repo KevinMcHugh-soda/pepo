@@ -68,9 +68,9 @@ func main() {
 		}
 
 		rows, err := queries.ListActionsByPersonID(ctx, db.ListActionsByPersonIDParams{
-			XidStr: args.PersonID,
-			Limit:  int32(limit),
-			Offset: int32(offset),
+			PersonID: args.PersonID,
+			Offset:   int32(offset),
+			Limit:    int32(limit),
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to list actions: %w", err)
