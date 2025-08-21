@@ -40,8 +40,8 @@ func (h *PersonHandler) CreatePerson(ctx context.Context, req *api.CreatePersonR
 
 	// Create person in database
 	person, err := h.queries.CreatePerson(ctx, db.CreatePersonParams{
-		XidStr: personID,
-		Name:   req.Name,
+		ID:   personID,
+		Name: req.Name,
 	})
 	if err != nil {
 		log.Printf("Error creating person: %v", err)
@@ -107,8 +107,8 @@ func (h *PersonHandler) GetPersons(ctx context.Context, params api.GetPersonsPar
 
 	// Get persons
 	persons, err := h.queries.ListPersons(ctx, db.ListPersonsParams{
-		Limit:  limit,
 		Offset: offset,
+		Limit:  limit,
 	})
 	if err != nil {
 		log.Printf("Error listing persons: %v", err)
@@ -196,8 +196,8 @@ func (h *PersonHandler) UpdatePerson(ctx context.Context, req *api.UpdatePersonR
 	}
 
 	person, err := h.queries.UpdatePerson(ctx, db.UpdatePersonParams{
-		XidStr: params.ID,
-		Name:   req.Name,
+		ID:   params.ID,
+		Name: req.Name,
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {

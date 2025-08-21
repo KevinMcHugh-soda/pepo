@@ -82,11 +82,33 @@ type Action struct {
 	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
 }
 
+type ActionConversation struct {
+	ActionID       []byte    `db:"action_id" json:"action_id"`
+	ConversationID []byte    `db:"conversation_id" json:"conversation_id"`
+	CreatedAt      time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at" json:"updated_at"`
+}
+
 type ActionTheme struct {
 	ActionID  []byte    `db:"action_id" json:"action_id"`
 	ThemeID   []byte    `db:"theme_id" json:"theme_id"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type Conversation struct {
+	ID          []byte    `db:"id" json:"id"`
+	Description string    `db:"description" json:"description"`
+	OccurredAt  time.Time `db:"occurred_at" json:"occurred_at"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type ConversationTheme struct {
+	ConversationID []byte    `db:"conversation_id" json:"conversation_id"`
+	ThemeID        []byte    `db:"theme_id" json:"theme_id"`
+	CreatedAt      time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type Person struct {

@@ -29,8 +29,8 @@ RETURNING b2x(id) as id, name, created_at, updated_at
 `
 
 type CreatePersonParams struct {
-	XidStr string `db:"xid_str" json:"xid_str"`
-	Name   string `db:"name" json:"name"`
+	ID   string `db:"id" json:"id"`
+	Name string `db:"name" json:"name"`
 }
 
 type CreatePersonRow struct {
@@ -41,7 +41,7 @@ type CreatePersonRow struct {
 }
 
 func (q *Queries) CreatePerson(ctx context.Context, arg CreatePersonParams) (CreatePersonRow, error) {
-	row := q.db.QueryRowContext(ctx, createPerson, arg.XidStr, arg.Name)
+	row := q.db.QueryRowContext(ctx, createPerson, arg.ID, arg.Name)
 	var i CreatePersonRow
 	err := row.Scan(
 		&i.ID,
@@ -57,8 +57,8 @@ DELETE FROM person
 WHERE id = x2b($1)
 `
 
-func (q *Queries) DeletePerson(ctx context.Context, xidStr string) error {
-	_, err := q.db.ExecContext(ctx, deletePerson, xidStr)
+func (q *Queries) DeletePerson(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, deletePerson, id)
 	return err
 }
 
@@ -75,8 +75,8 @@ type GetPersonByIDRow struct {
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
-func (q *Queries) GetPersonByID(ctx context.Context, xidStr string) (GetPersonByIDRow, error) {
-	row := q.db.QueryRowContext(ctx, getPersonByID, xidStr)
+func (q *Queries) GetPersonByID(ctx context.Context, id string) (GetPersonByIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getPersonByID, id)
 	var i GetPersonByIDRow
 	err := row.Scan(
 		&i.ID,
@@ -116,12 +116,12 @@ const listPersons = `-- name: ListPersons :many
 SELECT b2x(id) as id, name, created_at, updated_at
 FROM person
 ORDER BY created_at DESC
-LIMIT $1 OFFSET $2
+LIMIT $2 OFFSET $1
 `
 
 type ListPersonsParams struct {
-	Limit  int32 `db:"limit" json:"limit"`
 	Offset int32 `db:"offset" json:"offset"`
+	Limit  int32 `db:"limit" json:"limit"`
 }
 
 type ListPersonsRow struct {
@@ -132,7 +132,7 @@ type ListPersonsRow struct {
 }
 
 func (q *Queries) ListPersons(ctx context.Context, arg ListPersonsParams) ([]ListPersonsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listPersons, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listPersons, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -170,12 +170,12 @@ FROM person p
 LEFT JOIN action a ON p.id = a.person_id
 GROUP BY p.id, p.name, p.created_at, p.updated_at
 ORDER BY p.created_at DESC
-LIMIT $1 OFFSET $2
+LIMIT $2 OFFSET $1
 `
 
 type ListPersonsWithLastActionParams struct {
-	Limit  int32 `db:"limit" json:"limit"`
 	Offset int32 `db:"offset" json:"offset"`
+	Limit  int32 `db:"limit" json:"limit"`
 }
 
 type ListPersonsWithLastActionRow struct {
@@ -187,7 +187,7 @@ type ListPersonsWithLastActionRow struct {
 }
 
 func (q *Queries) ListPersonsWithLastAction(ctx context.Context, arg ListPersonsWithLastActionParams) ([]ListPersonsWithLastActionRow, error) {
-	rows, err := q.db.QueryContext(ctx, listPersonsWithLastAction, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listPersonsWithLastAction, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -220,13 +220,13 @@ SELECT b2x(id) as id, name, created_at, updated_at
 FROM person
 WHERE name ILIKE '%' || $1 || '%'
 ORDER BY name
-LIMIT $2 OFFSET $3
+LIMIT $3 OFFSET $2
 `
 
 type SearchPersonsByNameParams struct {
-	Column1 sql.NullString `db:"column_1" json:"column_1"`
-	Limit   int32          `db:"limit" json:"limit"`
-	Offset  int32          `db:"offset" json:"offset"`
+	Search sql.NullString `db:"search" json:"search"`
+	Offset int32          `db:"offset" json:"offset"`
+	Limit  int32          `db:"limit" json:"limit"`
 }
 
 type SearchPersonsByNameRow struct {
@@ -237,7 +237,7 @@ type SearchPersonsByNameRow struct {
 }
 
 func (q *Queries) SearchPersonsByName(ctx context.Context, arg SearchPersonsByNameParams) ([]SearchPersonsByNameRow, error) {
-	rows, err := q.db.QueryContext(ctx, searchPersonsByName, arg.Column1, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, searchPersonsByName, arg.Search, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -266,14 +266,14 @@ func (q *Queries) SearchPersonsByName(ctx context.Context, arg SearchPersonsByNa
 
 const updatePerson = `-- name: UpdatePerson :one
 UPDATE person
-SET name = $2, updated_at = NOW()
-WHERE id = x2b($1)
+SET name = $1, updated_at = NOW()
+WHERE id = x2b($2)
 RETURNING b2x(id) as id, name, created_at, updated_at
 `
 
 type UpdatePersonParams struct {
-	XidStr string `db:"xid_str" json:"xid_str"`
-	Name   string `db:"name" json:"name"`
+	Name string `db:"name" json:"name"`
+	ID   string `db:"id" json:"id"`
 }
 
 type UpdatePersonRow struct {
@@ -284,7 +284,7 @@ type UpdatePersonRow struct {
 }
 
 func (q *Queries) UpdatePerson(ctx context.Context, arg UpdatePersonParams) (UpdatePersonRow, error) {
-	row := q.db.QueryRowContext(ctx, updatePerson, arg.XidStr, arg.Name)
+	row := q.db.QueryRowContext(ctx, updatePerson, arg.Name, arg.ID)
 	var i UpdatePersonRow
 	err := row.Scan(
 		&i.ID,

@@ -16,8 +16,8 @@ RETURNING theme.id, theme.person_id, theme.text, theme.created_at, theme.updated
 `
 
 type CreateThemeParams struct {
-	XidStr   string `db:"xid_str" json:"xid_str"`
-	XidStr_2 string `db:"xid_str_2" json:"xid_str_2"`
+	ID       string `db:"id" json:"id"`
+	PersonID string `db:"person_id" json:"person_id"`
 	Text     string `db:"text" json:"text"`
 }
 
@@ -26,7 +26,7 @@ type CreateThemeRow struct {
 }
 
 func (q *Queries) CreateTheme(ctx context.Context, arg CreateThemeParams) (CreateThemeRow, error) {
-	row := q.db.QueryRowContext(ctx, createTheme, arg.XidStr, arg.XidStr_2, arg.Text)
+	row := q.db.QueryRowContext(ctx, createTheme, arg.ID, arg.PersonID, arg.Text)
 	var i CreateThemeRow
 	err := row.Scan(
 		&i.Theme.ID,
@@ -43,8 +43,8 @@ DELETE FROM theme
 WHERE id = x2b($1)
 `
 
-func (q *Queries) DeleteTheme(ctx context.Context, xidStr string) error {
-	_, err := q.db.ExecContext(ctx, deleteTheme, xidStr)
+func (q *Queries) DeleteTheme(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, deleteTheme, id)
 	return err
 }
 
@@ -58,8 +58,8 @@ type GetThemeByIDRow struct {
 	Theme Theme `db:"theme" json:"theme"`
 }
 
-func (q *Queries) GetThemeByID(ctx context.Context, xidStr string) (GetThemeByIDRow, error) {
-	row := q.db.QueryRowContext(ctx, getThemeByID, xidStr)
+func (q *Queries) GetThemeByID(ctx context.Context, id string) (GetThemeByIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getThemeByID, id)
 	var i GetThemeByIDRow
 	err := row.Scan(
 		&i.Theme.ID,
@@ -75,12 +75,12 @@ const listThemes = `-- name: ListThemes :many
 SELECT theme.id, theme.person_id, theme.text, theme.created_at, theme.updated_at
 FROM theme
 ORDER BY created_at DESC
-LIMIT $1 OFFSET $2
+LIMIT $2 OFFSET $1
 `
 
 type ListThemesParams struct {
-	Limit  int32 `db:"limit" json:"limit"`
 	Offset int32 `db:"offset" json:"offset"`
+	Limit  int32 `db:"limit" json:"limit"`
 }
 
 type ListThemesRow struct {
@@ -88,7 +88,7 @@ type ListThemesRow struct {
 }
 
 func (q *Queries) ListThemes(ctx context.Context, arg ListThemesParams) ([]ListThemesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listThemes, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listThemes, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -121,13 +121,13 @@ SELECT theme.id, theme.person_id, theme.text, theme.created_at, theme.updated_at
 FROM theme
 WHERE person_id = x2b($1)
 ORDER BY created_at DESC
-LIMIT $2 OFFSET $3
+LIMIT $3 OFFSET $2
 `
 
 type ListThemesByPersonIDParams struct {
-	XidStr string `db:"xid_str" json:"xid_str"`
-	Limit  int32  `db:"limit" json:"limit"`
-	Offset int32  `db:"offset" json:"offset"`
+	PersonID string `db:"person_id" json:"person_id"`
+	Offset   int32  `db:"offset" json:"offset"`
+	Limit    int32  `db:"limit" json:"limit"`
 }
 
 type ListThemesByPersonIDRow struct {
@@ -135,7 +135,7 @@ type ListThemesByPersonIDRow struct {
 }
 
 func (q *Queries) ListThemesByPersonID(ctx context.Context, arg ListThemesByPersonIDParams) ([]ListThemesByPersonIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, listThemesByPersonID, arg.XidStr, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listThemesByPersonID, arg.PersonID, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

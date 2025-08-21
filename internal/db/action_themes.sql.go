@@ -15,12 +15,12 @@ VALUES (x2b($1), x2b($2))
 `
 
 type AddThemeToActionParams struct {
-	XidStr   string `db:"xid_str" json:"xid_str"`
-	XidStr_2 string `db:"xid_str_2" json:"xid_str_2"`
+	ActionID string `db:"action_id" json:"action_id"`
+	ThemeID  string `db:"theme_id" json:"theme_id"`
 }
 
 func (q *Queries) AddThemeToAction(ctx context.Context, arg AddThemeToActionParams) error {
-	_, err := q.db.ExecContext(ctx, addThemeToAction, arg.XidStr, arg.XidStr_2)
+	_, err := q.db.ExecContext(ctx, addThemeToAction, arg.ActionID, arg.ThemeID)
 	return err
 }
 
@@ -30,13 +30,13 @@ FROM action_theme at
 JOIN action ON at.action_id = action.id
 WHERE at.theme_id = x2b($1)
 ORDER BY action.created_at DESC
-LIMIT $2 OFFSET $3
+LIMIT $3 OFFSET $2
 `
 
 type ListActionsByThemeIDParams struct {
-	XidStr string `db:"xid_str" json:"xid_str"`
-	Limit  int32  `db:"limit" json:"limit"`
-	Offset int32  `db:"offset" json:"offset"`
+	ThemeID string `db:"theme_id" json:"theme_id"`
+	Offset  int32  `db:"offset" json:"offset"`
+	Limit   int32  `db:"limit" json:"limit"`
 }
 
 type ListActionsByThemeIDRow struct {
@@ -44,7 +44,7 @@ type ListActionsByThemeIDRow struct {
 }
 
 func (q *Queries) ListActionsByThemeID(ctx context.Context, arg ListActionsByThemeIDParams) ([]ListActionsByThemeIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, listActionsByThemeID, arg.XidStr, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listActionsByThemeID, arg.ThemeID, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -81,13 +81,13 @@ FROM action_theme at
 JOIN theme ON at.theme_id = theme.id
 WHERE at.action_id = x2b($1)
 ORDER BY theme.created_at DESC
-LIMIT $2 OFFSET $3
+LIMIT $3 OFFSET $2
 `
 
 type ListThemesByActionIDParams struct {
-	XidStr string `db:"xid_str" json:"xid_str"`
-	Limit  int32  `db:"limit" json:"limit"`
-	Offset int32  `db:"offset" json:"offset"`
+	ActionID string `db:"action_id" json:"action_id"`
+	Offset   int32  `db:"offset" json:"offset"`
+	Limit    int32  `db:"limit" json:"limit"`
 }
 
 type ListThemesByActionIDRow struct {
@@ -95,7 +95,7 @@ type ListThemesByActionIDRow struct {
 }
 
 func (q *Queries) ListThemesByActionID(ctx context.Context, arg ListThemesByActionIDParams) ([]ListThemesByActionIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, listThemesByActionID, arg.XidStr, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listThemesByActionID, arg.ActionID, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -129,11 +129,11 @@ WHERE action_id = x2b($1) AND theme_id = x2b($2)
 `
 
 type RemoveThemeFromActionParams struct {
-	XidStr   string `db:"xid_str" json:"xid_str"`
-	XidStr_2 string `db:"xid_str_2" json:"xid_str_2"`
+	ActionID string `db:"action_id" json:"action_id"`
+	ThemeID  string `db:"theme_id" json:"theme_id"`
 }
 
 func (q *Queries) RemoveThemeFromAction(ctx context.Context, arg RemoveThemeFromActionParams) error {
-	_, err := q.db.ExecContext(ctx, removeThemeFromAction, arg.XidStr, arg.XidStr_2)
+	_, err := q.db.ExecContext(ctx, removeThemeFromAction, arg.ActionID, arg.ThemeID)
 	return err
 }
