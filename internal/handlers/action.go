@@ -57,14 +57,6 @@ func convertToAPIAction(action db.Action) api.Action {
 // API Handlers
 
 func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionRequest) (api.CreateActionRes, error) {
-	// Validate request
-	if req.Description == "" {
-		return &api.CreateActionBadRequest{
-			Message: "Description is required",
-			Code:    "VALIDATION_ERROR",
-		}, nil
-	}
-
 	// Generate new xid for the action
 	actionID := xid.New().String()
 
