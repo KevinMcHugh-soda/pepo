@@ -10,7 +10,9 @@ RUN go mod download
 
 # Copy the rest of the source code
 COPY . .
-
+COPY cmd/ cmd/
+COPY internal/ internal/
+COPY templates/ templates/
 # Build the server binary
 RUN CGO_ENABLED=0 GOOS=linux go build -o /pepo-server ./cmd/server
 
