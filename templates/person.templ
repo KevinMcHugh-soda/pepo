@@ -124,16 +124,19 @@ templ PersonDetail(person Person, actions []Action) {
 	@Layout(person.Name + " - Person Details") {
 		        @LockWrapper() {
 			<!-- Header with back button -->
-			<div class="mb-6">
-				<a href="/" class="text-blue-600 hover:text-blue-800 flex items-center mb-4">
-					← Back to People List
-				</a>
-				<div class="bg-white rounded-lg shadow p-6">
-					<h1 class="text-2xl font-bold text-gray-900 mb-2">{ person.Name }</h1>
-				</div>
-			</div>
-			<!-- Record Action Form -->
-			@RecordActionForm(person.ID, "#actions-list")
+                        <div class="mb-6">
+                                <a href="/" class="text-blue-600 hover:text-blue-800 flex items-center mb-4">
+                                        ← Back to People List
+                                </a>
+                                <div class="bg-white rounded-lg shadow p-6">
+                                        <h1 class="text-2xl font-bold text-gray-900 mb-2">{ person.Name }</h1>
+                                </div>
+                        </div>
+                        <!-- Record Conversation Form -->
+                        @RecordConversationForm(person.ID, "#conversations-list")
+                        <div id="conversations-list" class="mb-6"></div>
+                        <!-- Record Action Form -->
+                        @RecordActionForm(person.ID, "#actions-list")
 			<!-- Actions section -->
 			<div class="bg-white rounded-lg shadow p-6">
 				<div class="flex justify-between items-center mb-4">
