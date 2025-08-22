@@ -140,12 +140,13 @@ dev: docker-up migrate generate
 # Docker commands for PostgreSQL
 docker-up:
 	@echo "Starting PostgreSQL container..."
+	docker start pepo-postgres >/dev/null 2>&1 || \
 	docker run --name pepo-postgres -d \
-		-e POSTGRES_USER=postgres \
-		-e POSTGRES_PASSWORD=password \
-		-e POSTGRES_DB=pepo_dev \
-		-p 5433:5432 \
-		postgres:15-alpine || echo "Container already running"
+	        -e POSTGRES_USER=postgres \
+	        -e POSTGRES_PASSWORD=password \
+	        -e POSTGRES_DB=pepo_dev \
+	        -p 5433:5432 \
+	        postgres:15-alpine
 
 docker-down:
 	@echo "Stopping PostgreSQL container..."
