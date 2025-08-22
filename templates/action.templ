@@ -186,15 +186,24 @@ templ RecordActionForm(personID string, targetSelector string) {
                                                 <option value="">Select a person first</option>
                                         }
                                 </select>
-                        </div>
-                        <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Add new theme</label>
-                                <input
-                                        type="text"
-                                        name="new_theme"
-                                        placeholder="e.g. communication"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                <div class="flex items-center gap-2 mt-2">
+                                        <input
+                                                type="text"
+                                                id="new-theme-input"
+                                                name="text"
+                                                placeholder="Add new theme"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        <button
+                                                type="button"
+                                                class="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                hx-post="/forms/themes/create"
+                                                hx-include="#new-theme-input,[name=person_id],#theme-select"
+                                                hx-target="#theme-select"
+                                                hx-swap="innerHTML"
+                                                hx-on::after-request="if(event.detail.successful) document.getElementById('new-theme-input').value=''"
+                                        >Add</button>
+                                </div>
                         </div>
 			<button
 				type="submit"
@@ -290,15 +299,24 @@ templ EditActionForm(action Action) {
                                 >
                                         @ThemeSelectLoading()
                                 </select>
-                        </div>
-                        <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Add new theme</label>
-                                <input
-                                        type="text"
-                                        name="new_theme"
-                                        placeholder="e.g. communication"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                <div class="flex items-center gap-2 mt-2">
+                                        <input
+                                                type="text"
+                                                id="new-theme-input"
+                                                name="text"
+                                                placeholder="Add new theme"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        <button
+                                                type="button"
+                                                class="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                hx-post="/forms/themes/create"
+                                                hx-include="#new-theme-input,[name=person_id],#theme-select"
+                                                hx-target="#theme-select"
+                                                hx-swap="innerHTML"
+                                                hx-on::after-request="if(event.detail.successful) document.getElementById('new-theme-input').value=''"
+                                        >Add</button>
+                                </div>
                         </div>
                         <div class="flex justify-end space-x-2">
                                 <a

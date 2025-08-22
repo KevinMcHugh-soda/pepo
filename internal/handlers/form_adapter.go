@@ -116,12 +116,6 @@ func (f *FormAdapter) ParseCreateActionRequest(r *http.Request) (*api.CreateActi
 		}
 	}
 
-	// Parse new theme name
-	newTheme := strings.TrimSpace(r.FormValue("new_theme"))
-	if newTheme != "" {
-		req.NewTheme = api.NewOptString(newTheme)
-	}
-
 	return req, nil
 }
 
