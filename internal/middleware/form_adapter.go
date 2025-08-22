@@ -28,13 +28,16 @@ func (f *FormToJSONAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid form data: "+err.Error(), http.StatusBadRequest)
 			return
 		}
+		if jsonData != nil {
+			// Create a new request with JSON data
+			newRequest := f.createJSONRequest(r, jsonData)
 
-		// Create a new request with JSON data
-		newRequest := f.createJSONRequest(r, jsonData)
+			// Pass the modified request to the next handler
+			f.next.ServeHTTP(w, newRequest)
+			return
+		}
 
-		// Pass the modified request to the next handler
-		f.next.ServeHTTP(w, newRequest)
-		return
+		// If no conversion happened, fall through and pass original request
 	}
 
 	// Pass through non-form requests unchanged
@@ -61,7 +64,8 @@ func (f *FormToJSONAdapter) convertFormToJSON(r *http.Request) ([]byte, error) {
 		return f.convertActionForm(r)
 	}
 
-	return nil, &FormError{Message: "Unknown form type"}
+	// Unknown form type - skip conversion
+	return nil, nil
 }
 
 // convertPersonForm converts person form data to JSON
