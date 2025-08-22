@@ -141,6 +141,20 @@ func (f *FormToJSONAdapter) convertActionForm(r *http.Request) ([]byte, error) {
 		data["references"] = references
 	}
 
+	// Optional themes field
+	if themes := r.Form["themes"]; len(themes) > 0 {
+		clean := make([]string, 0, len(themes))
+		for _, t := range themes {
+			t = strings.TrimSpace(t)
+			if t != "" {
+				clean = append(clean, t)
+			}
+		}
+		if len(clean) > 0 {
+			data["themes"] = clean
+		}
+	}
+
 	return json.Marshal(data)
 }
 
