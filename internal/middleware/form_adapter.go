@@ -58,14 +58,15 @@ func (f *FormToJSONAdapter) convertFormToJSON(r *http.Request) ([]byte, error) {
 	}
 
 	// Determine the type of form based on URL path
-	if strings.Contains(r.URL.Path, "/people") {
+	switch {
+	case strings.HasPrefix(r.URL.Path, "/people"):
 		return f.convertPersonForm(r)
-	} else if strings.Contains(r.URL.Path, "/actions") {
+	case strings.HasPrefix(r.URL.Path, "/actions"):
 		return f.convertActionForm(r)
+	default:
+		// Unknown form type - skip conversion
+		return nil, nil
 	}
-
-	// Unknown form type - skip conversion
-	return nil, nil
 }
 
 // convertPersonForm converts person form data to JSON
