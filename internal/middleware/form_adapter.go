@@ -28,13 +28,16 @@ func (f *FormToJSONAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid form data: "+err.Error(), http.StatusBadRequest)
 			return
 		}
+		if jsonData != nil {
+			// Create a new request with JSON data
+			newRequest := f.createJSONRequest(r, jsonData)
 
-		// Create a new request with JSON data
-		newRequest := f.createJSONRequest(r, jsonData)
+			// Pass the modified request to the next handler
+			f.next.ServeHTTP(w, newRequest)
+			return
+		}
 
-		// Pass the modified request to the next handler
-		f.next.ServeHTTP(w, newRequest)
-		return
+		// If no conversion happened, fall through and pass original request
 	}
 
 	// Pass through non-form requests unchanged
@@ -55,15 +58,19 @@ func (f *FormToJSONAdapter) convertFormToJSON(r *http.Request) ([]byte, error) {
 	}
 
 	// Determine the type of form based on URL path
-	if strings.Contains(r.URL.Path, "/people") {
+	switch {
+	case strings.HasPrefix(r.URL.Path, "/people"):
 		return f.convertPersonForm(r)
-	} else if strings.Contains(r.URL.Path, "/actions") {
+	case strings.HasPrefix(r.URL.Path, "/actions"):
 		return f.convertActionForm(r)
-	} else if strings.Contains(r.URL.Path, "/conversations") {
+	case strings.Contains(r.URL.Path, "/conversations"):
 		return f.convertConversationForm(r)
+	case strings.HasPrefix(r.URL.Path, "/forms/themes"):
+		return f.convertThemeForm(r)
+	default:
+		// Unknown form type - skip conversion
+		return nil, nil
 	}
-
-	return nil, &FormError{Message: "Unknown form type"}
 }
 
 // convertPersonForm converts person form data to JSON
@@ -137,6 +144,53 @@ func (f *FormToJSONAdapter) convertActionForm(r *http.Request) ([]byte, error) {
 	references := strings.TrimSpace(r.FormValue("references"))
 	if references != "" {
 		data["references"] = references
+	}
+
+	// Optional themes field
+	if themes := r.Form["themes"]; len(themes) > 0 {
+		clean := make([]string, 0, len(themes))
+		for _, t := range themes {
+			t = strings.TrimSpace(t)
+			if t != "" {
+				clean = append(clean, t)
+			}
+		}
+		if len(clean) > 0 {
+			data["themes"] = clean
+		}
+	}
+
+	return json.Marshal(data)
+}
+
+// convertThemeForm converts theme creation form data to JSON
+func (f *FormToJSONAdapter) convertThemeForm(r *http.Request) ([]byte, error) {
+	personID := strings.TrimSpace(r.FormValue("person_id"))
+	if personID == "" {
+		return nil, &FormError{Field: "person_id", Message: "Person ID is required"}
+	}
+
+	text := strings.TrimSpace(r.FormValue("text"))
+	if text == "" {
+		return nil, &FormError{Field: "text", Message: "Text is required"}
+	}
+
+	data := map[string]interface{}{
+		"person_id": personID,
+		"text":      text,
+	}
+
+	if themes := r.Form["themes"]; len(themes) > 0 {
+		clean := make([]string, 0, len(themes))
+		for _, t := range themes {
+			t = strings.TrimSpace(t)
+			if t != "" {
+				clean = append(clean, t)
+			}
+		}
+		if len(clean) > 0 {
+			data["themes"] = clean
+		}
 	}
 
 	return json.Marshal(data)
