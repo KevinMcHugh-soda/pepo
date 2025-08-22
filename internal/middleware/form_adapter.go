@@ -59,6 +59,8 @@ func (f *FormToJSONAdapter) convertFormToJSON(r *http.Request) ([]byte, error) {
 		return f.convertPersonForm(r)
 	} else if strings.Contains(r.URL.Path, "/actions") {
 		return f.convertActionForm(r)
+	} else if strings.Contains(r.URL.Path, "/conversations") {
+		return f.convertConversationForm(r)
 	}
 
 	return nil, &FormError{Message: "Unknown form type"}
@@ -135,6 +137,51 @@ func (f *FormToJSONAdapter) convertActionForm(r *http.Request) ([]byte, error) {
 	references := strings.TrimSpace(r.FormValue("references"))
 	if references != "" {
 		data["references"] = references
+	}
+
+	return json.Marshal(data)
+}
+
+// convertConversationForm converts conversation form data to JSON
+func (f *FormToJSONAdapter) convertConversationForm(r *http.Request) ([]byte, error) {
+	// Required fields
+	personID := strings.TrimSpace(r.FormValue("person_id"))
+	if personID == "" {
+		return nil, &FormError{Field: "person_id", Message: "Person ID is required"}
+	}
+
+	description := strings.TrimSpace(r.FormValue("description"))
+	if description == "" {
+		return nil, &FormError{Field: "description", Message: "Description is required"}
+	}
+
+	// Parse occurred_at (optional, defaults to current time if not provided)
+	var occurredAt time.Time
+	occurredAtStr := strings.TrimSpace(r.FormValue("occurred_at"))
+	if occurredAtStr != "" {
+		// Try parsing HTML datetime-local format: 2006-01-02T15:04
+		var err error
+		occurredAt, err = time.Parse("2006-01-02T15:04", occurredAtStr)
+		if err != nil {
+			// Try with seconds: 2006-01-02T15:04:05
+			occurredAt, err = time.Parse("2006-01-02T15:04:05", occurredAtStr)
+			if err != nil {
+				// Try ISO format
+				occurredAt, err = time.Parse(time.RFC3339, occurredAtStr)
+				if err != nil {
+					return nil, &FormError{Field: "occurred_at", Message: "Invalid date format"}
+				}
+			}
+		}
+	} else {
+		occurredAt = time.Now()
+	}
+
+	// Build JSON data
+	data := map[string]interface{}{
+		"person_id":   personID,
+		"occurred_at": occurredAt.Format(time.RFC3339),
+		"description": description,
 	}
 
 	return json.Marshal(data)
