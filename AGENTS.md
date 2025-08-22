@@ -6,6 +6,13 @@ This repository contains a Go-based web application for tracking performance of 
 - **API:** RESTful API described with OpenAPI. The spec lives at `api/openapi.yaml` and code is generated via [ogen](https://ogen.dev/) into `internal/api`. Run `make generate-api` after modifying the spec to refresh the generated code.
 - **Database:** PostgreSQL with interactions generated through [sqlc](https://sqlc.dev/); schema managed by [dbmate](https://github.com/amacneil/dbmate). Primary keys use [xid](https://github.com/rs/xid).
 
+## Data Flow from Forms to Database
+
+- HTMX forms in `templates/` submit data with `hx-post` or `hx-put` to API routes.
+- `FormToJSONAdapter` middleware (`internal/middleware/form_adapter.go`) intercepts form submissions and converts `application/x-www-form-urlencoded` or multipart form data into JSON.
+- API handlers (`internal/handlers`) unmarshal this JSON into request structs and call the appropriate sqlc-generated query functions.
+- These query functions (`internal/db`) execute SQL against the PostgreSQL database, persisting or retrieving the submitted data.
+
 ## Development Guidelines
 
 - Format Go code with `go fmt ./...` before committing.
