@@ -167,6 +167,84 @@ func (s *ActionValence) UnmarshalText(data []byte) error {
 	}
 }
 
+// Ref: #/components/schemas/Conversation
+type Conversation struct {
+	// Unique identifier (xid).
+	ID string `json:"id"`
+	// ID of the person this conversation relates to.
+	PersonID string `json:"person_id"`
+	// When the conversation occurred.
+	OccurredAt time.Time `json:"occurred_at"`
+	// Description of the conversation.
+	Description string `json:"description"`
+	// When the conversation was created.
+	CreatedAt time.Time `json:"created_at"`
+	// When the conversation was last updated.
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// GetID returns the value of ID.
+func (s *Conversation) GetID() string {
+	return s.ID
+}
+
+// GetPersonID returns the value of PersonID.
+func (s *Conversation) GetPersonID() string {
+	return s.PersonID
+}
+
+// GetOccurredAt returns the value of OccurredAt.
+func (s *Conversation) GetOccurredAt() time.Time {
+	return s.OccurredAt
+}
+
+// GetDescription returns the value of Description.
+func (s *Conversation) GetDescription() string {
+	return s.Description
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *Conversation) GetCreatedAt() time.Time {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *Conversation) GetUpdatedAt() time.Time {
+	return s.UpdatedAt
+}
+
+// SetID sets the value of ID.
+func (s *Conversation) SetID(val string) {
+	s.ID = val
+}
+
+// SetPersonID sets the value of PersonID.
+func (s *Conversation) SetPersonID(val string) {
+	s.PersonID = val
+}
+
+// SetOccurredAt sets the value of OccurredAt.
+func (s *Conversation) SetOccurredAt(val time.Time) {
+	s.OccurredAt = val
+}
+
+// SetDescription sets the value of Description.
+func (s *Conversation) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *Conversation) SetCreatedAt(val time.Time) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *Conversation) SetUpdatedAt(val time.Time) {
+	s.UpdatedAt = val
+}
+
+func (*Conversation) createConversationRes() {}
+
 type CreateActionBadRequest Error
 
 func (*CreateActionBadRequest) createActionRes() {}
@@ -326,6 +404,70 @@ func (s *CreateActionRequestValence) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+type CreateConversationBadRequest Error
+
+func (*CreateConversationBadRequest) createConversationRes() {}
+
+type CreateConversationCreatedTextHTML struct {
+	Data io.Reader
+}
+
+// Read reads data from the Data reader.
+//
+// Kept to satisfy the io.Reader interface.
+func (s CreateConversationCreatedTextHTML) Read(p []byte) (n int, err error) {
+	if s.Data == nil {
+		return 0, io.EOF
+	}
+	return s.Data.Read(p)
+}
+
+func (*CreateConversationCreatedTextHTML) createConversationRes() {}
+
+type CreateConversationInternalServerError Error
+
+func (*CreateConversationInternalServerError) createConversationRes() {}
+
+// Ref: #/components/schemas/CreateConversationRequest
+type CreateConversationRequest struct {
+	// ID of the person this conversation relates to.
+	PersonID string `json:"person_id"`
+	// When the conversation occurred.
+	OccurredAt time.Time `json:"occurred_at"`
+	// Description of the conversation.
+	Description string `json:"description"`
+}
+
+// GetPersonID returns the value of PersonID.
+func (s *CreateConversationRequest) GetPersonID() string {
+	return s.PersonID
+}
+
+// GetOccurredAt returns the value of OccurredAt.
+func (s *CreateConversationRequest) GetOccurredAt() time.Time {
+	return s.OccurredAt
+}
+
+// GetDescription returns the value of Description.
+func (s *CreateConversationRequest) GetDescription() string {
+	return s.Description
+}
+
+// SetPersonID sets the value of PersonID.
+func (s *CreateConversationRequest) SetPersonID(val string) {
+	s.PersonID = val
+}
+
+// SetOccurredAt sets the value of OccurredAt.
+func (s *CreateConversationRequest) SetOccurredAt(val time.Time) {
+	s.OccurredAt = val
+}
+
+// SetDescription sets the value of Description.
+func (s *CreateConversationRequest) SetDescription(val string) {
+	s.Description = val
 }
 
 type CreatePersonBadRequest Error

@@ -1,5 +1,37 @@
 package templates
 
+import "time"
+
+type Conversation struct {
+        ID          string    `json:"id"`
+        PersonID    string    `json:"person_id"`
+        OccurredAt  time.Time `json:"occurred_at"`
+        Description string    `json:"description"`
+        CreatedAt   time.Time `json:"created_at"`
+        UpdatedAt   time.Time `json:"updated_at"`
+}
+
+templ ConversationItem(conv Conversation) {
+        <div class="border-b pb-3 mb-3" id={ "conversation-" + conv.ID }>
+                <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                                <p class="text-gray-800 mb-1">{ conv.Description }</p>
+                                <div class="text-xs text-gray-500">{ conv.OccurredAt.Format("Jan 02, 2006 15:04") }</div>
+                        </div>
+                </div>
+        </div>
+}
+
+templ ConversationList(conversations []Conversation) {
+        if len(conversations) == 0 {
+                <div class="text-gray-500 text-center py-4">No conversations found. Add some above!</div>
+        } else {
+                for _, c := range conversations {
+                        @ConversationItem(c)
+                }
+        }
+}
+
 templ RecordConversationForm(personID string, targetSelector string) {
         <div class="bg-white rounded-lg shadow p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4">Record New Conversation</h2>

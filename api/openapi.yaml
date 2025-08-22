@@ -212,6 +212,41 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /conversations:
+    post:
+      summary: Create a new conversation
+      operationId: createConversation
+      tags:
+        - conversations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateConversationRequest"
+      responses:
+        "201":
+          description: Conversation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+            text/html:
+              schema:
+                type: string
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /actions:
     get:
       summary: Get all actions
@@ -653,7 +688,6 @@ components:
         - occurred_at
         - description
         - valence
-
     UpdateActionRequest:
       type: object
       properties:
@@ -692,6 +726,70 @@ components:
         - occurred_at
         - description
         - valence
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier (xid)
+          pattern: "^[0-9a-v]{20}$"
+          example: "9m4e2mr0ui3e8a215n4g"
+        person_id:
+          type: string
+          description: ID of the person this conversation relates to
+          pattern: "^[0-9a-v]{20}$"
+          example: "9m4e2mr0ui3e8a215n4g"
+        occurred_at:
+          type: string
+          format: date-time
+          description: When the conversation occurred
+          example: "2023-01-01T00:00:00Z"
+        description:
+          type: string
+          description: Description of the conversation
+          minLength: 1
+          example: "Discussed quarterly goals"
+        created_at:
+          type: string
+          format: date-time
+          description: When the conversation was created
+          example: "2023-01-01T00:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: When the conversation was last updated
+          example: "2023-01-01T00:00:00Z"
+      required:
+        - id
+        - person_id
+        - occurred_at
+        - description
+        - created_at
+        - updated_at
+
+    CreateConversationRequest:
+      type: object
+      properties:
+        person_id:
+          type: string
+          description: ID of the person this conversation relates to
+          pattern: "^[0-9a-v]{20}$"
+          example: "9m4e2mr0ui3e8a215n4g"
+        occurred_at:
+          type: string
+          format: date-time
+          description: When the conversation occurred
+          example: "2023-01-01T00:00:00Z"
+        description:
+          type: string
+          description: Description of the conversation
+          minLength: 1
+          example: "Discussed quarterly goals"
+      required:
+        - person_id
+        - occurred_at
+        - description
 
     Error:
       type: object

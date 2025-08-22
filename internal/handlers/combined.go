@@ -9,15 +9,17 @@ import (
 
 // CombinedAPIHandler implements all ogen interfaces by delegating to specific handlers
 type CombinedAPIHandler struct {
-	personHandler *PersonHandler
-	actionHandler *ActionHandler
+	personHandler       *PersonHandler
+	actionHandler       *ActionHandler
+	conversationHandler *ConversationHandler
 }
 
 // NewCombinedAPIHandler creates a new combined API handler
-func NewCombinedAPIHandler(personHandler *PersonHandler, actionHandler *ActionHandler) *CombinedAPIHandler {
+func NewCombinedAPIHandler(personHandler *PersonHandler, actionHandler *ActionHandler, conversationHandler *ConversationHandler) *CombinedAPIHandler {
 	return &CombinedAPIHandler{
-		personHandler: personHandler,
-		actionHandler: actionHandler,
+		personHandler:       personHandler,
+		actionHandler:       actionHandler,
+		conversationHandler: conversationHandler,
 	}
 }
 
@@ -69,4 +71,9 @@ func (h *CombinedAPIHandler) GetPersonActions(ctx context.Context, params api.Ge
 
 func (h *CombinedAPIHandler) GetPersonsWithLastAction(ctx context.Context, params api.GetPersonsParams) ([]templates.PersonWithLastAction, error) {
 	return h.personHandler.GetPersonsWithLastAction(ctx, params)
+}
+
+// Conversation API methods
+func (h *CombinedAPIHandler) CreateConversation(ctx context.Context, req *api.CreateConversationRequest) (api.CreateConversationRes, error) {
+	return h.conversationHandler.CreateConversation(ctx, req)
 }
