@@ -10,6 +10,21 @@ import (
 	"time"
 )
 
+const countConversationsByPersonID = `-- name: CountConversationsByPersonID :one
+SELECT COUNT(DISTINCT c.id)
+FROM conversation c
+JOIN action_conversation ac ON ac.conversation_id = c.id
+JOIN action a ON a.id = ac.action_id
+WHERE a.person_id = x2b($1)
+`
+
+func (q *Queries) CountConversationsByPersonID(ctx context.Context, personID string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countConversationsByPersonID, personID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createConversation = `-- name: CreateConversation :one
 INSERT INTO conversation (id, description, occurred_at)
 VALUES (
@@ -41,4 +56,54 @@ func (q *Queries) CreateConversation(ctx context.Context, arg CreateConversation
 		&i.Conversation.UpdatedAt,
 	)
 	return i, err
+}
+
+const listConversationsByPersonID = `-- name: ListConversationsByPersonID :many
+SELECT DISTINCT ON (c.id)
+    c.id, c.description, c.occurred_at, c.created_at, c.updated_at
+FROM conversation c
+JOIN action_conversation ac ON ac.conversation_id = c.id
+JOIN action a ON a.id = ac.action_id
+WHERE a.person_id = x2b($1)
+ORDER BY c.id, c.occurred_at DESC
+LIMIT $3 OFFSET $2
+`
+
+type ListConversationsByPersonIDParams struct {
+	PersonID string `db:"person_id" json:"person_id"`
+	Offset   int32  `db:"offset" json:"offset"`
+	Limit    int32  `db:"limit" json:"limit"`
+}
+
+type ListConversationsByPersonIDRow struct {
+	Conversation Conversation `db:"conversation" json:"conversation"`
+}
+
+func (q *Queries) ListConversationsByPersonID(ctx context.Context, arg ListConversationsByPersonIDParams) ([]ListConversationsByPersonIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, listConversationsByPersonID, arg.PersonID, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListConversationsByPersonIDRow{}
+	for rows.Next() {
+		var i ListConversationsByPersonIDRow
+		if err := rows.Scan(
+			&i.Conversation.ID,
+			&i.Conversation.Description,
+			&i.Conversation.OccurredAt,
+			&i.Conversation.CreatedAt,
+			&i.Conversation.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

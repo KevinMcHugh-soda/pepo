@@ -37,6 +37,10 @@ type GetPersonByIdRes interface {
 	getPersonByIdRes()
 }
 
+type GetPersonTimelineRes interface {
+	getPersonTimelineRes()
+}
+
 type GetPersonsRes interface {
 	getPersonsRes()
 }

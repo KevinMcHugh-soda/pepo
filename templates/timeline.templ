@@ -1,0 +1,21 @@
+package templates
+
+type TimelineItem struct {
+        Type         string       `json:"type"`
+        Action       *Action      `json:"action,omitempty"`
+        Conversation *Conversation `json:"conversation,omitempty"`
+}
+
+templ TimelineList(items []TimelineItem) {
+        if len(items) == 0 {
+                <div class="text-gray-500 text-center py-8" id="no-timeline-message">No timeline entries yet.</div>
+        } else {
+                for _, item := range items {
+                        if item.Type == "action" && item.Action != nil {
+                                @ActionItem(*item.Action)
+                        } else if item.Type == "conversation" && item.Conversation != nil {
+                                @ConversationItem(*item.Conversation)
+                        }
+                }
+        }
+}

@@ -202,26 +202,62 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 					switch elem[0] {
-					case '/': // Prefix: "/actions"
+					case '/': // Prefix: "/"
 
-						if l := len("/actions"); len(elem) >= l && elem[0:l] == "/actions" {
+						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
 						if len(elem) == 0 {
-							// Leaf node.
-							switch r.Method {
-							case "GET":
-								s.handleGetPersonActionsRequest([1]string{
-									args[0],
-								}, elemIsEscaped, w, r)
-							default:
-								s.notAllowed(w, r, "GET")
+							break
+						}
+						switch elem[0] {
+						case 'a': // Prefix: "actions"
+
+							if l := len("actions"); len(elem) >= l && elem[0:l] == "actions" {
+								elem = elem[l:]
+							} else {
+								break
 							}
 
-							return
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "GET":
+									s.handleGetPersonActionsRequest([1]string{
+										args[0],
+									}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, "GET")
+								}
+
+								return
+							}
+
+						case 't': // Prefix: "timeline"
+
+							if l := len("timeline"); len(elem) >= l && elem[0:l] == "timeline" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "GET":
+									s.handleGetPersonTimelineRequest([1]string{
+										args[0],
+									}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, "GET")
+								}
+
+								return
+							}
+
 						}
 
 					}
@@ -507,28 +543,66 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						}
 					}
 					switch elem[0] {
-					case '/': // Prefix: "/actions"
+					case '/': // Prefix: "/"
 
-						if l := len("/actions"); len(elem) >= l && elem[0:l] == "/actions" {
+						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 							elem = elem[l:]
 						} else {
 							break
 						}
 
 						if len(elem) == 0 {
-							// Leaf node.
-							switch method {
-							case "GET":
-								r.name = GetPersonActionsOperation
-								r.summary = "Get actions for a specific person"
-								r.operationID = "getPersonActions"
-								r.pathPattern = "/people/{id}/actions"
-								r.args = args
-								r.count = 1
-								return r, true
-							default:
-								return
+							break
+						}
+						switch elem[0] {
+						case 'a': // Prefix: "actions"
+
+							if l := len("actions"); len(elem) >= l && elem[0:l] == "actions" {
+								elem = elem[l:]
+							} else {
+								break
 							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "GET":
+									r.name = GetPersonActionsOperation
+									r.summary = "Get actions for a specific person"
+									r.operationID = "getPersonActions"
+									r.pathPattern = "/people/{id}/actions"
+									r.args = args
+									r.count = 1
+									return r, true
+								default:
+									return
+								}
+							}
+
+						case 't': // Prefix: "timeline"
+
+							if l := len("timeline"); len(elem) >= l && elem[0:l] == "timeline" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "GET":
+									r.name = GetPersonTimelineOperation
+									r.summary = "Get timeline for a specific person"
+									r.operationID = "getPersonTimeline"
+									r.pathPattern = "/people/{id}/timeline"
+									r.args = args
+									r.count = 1
+									return r, true
+								default:
+									return
+								}
+							}
+
 						}
 
 					}

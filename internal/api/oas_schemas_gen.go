@@ -781,6 +781,58 @@ func (s GetPersonByIdOKTextHTML) Read(p []byte) (n int, err error) {
 
 func (*GetPersonByIdOKTextHTML) getPersonByIdRes() {}
 
+type GetPersonTimelineInternalServerError Error
+
+func (*GetPersonTimelineInternalServerError) getPersonTimelineRes() {}
+
+type GetPersonTimelineNotFound Error
+
+func (*GetPersonTimelineNotFound) getPersonTimelineRes() {}
+
+type GetPersonTimelineOKApplicationJSON struct {
+	Items []TimelineItem `json:"items"`
+	// Total number of timeline items.
+	Total int `json:"total"`
+}
+
+// GetItems returns the value of Items.
+func (s *GetPersonTimelineOKApplicationJSON) GetItems() []TimelineItem {
+	return s.Items
+}
+
+// GetTotal returns the value of Total.
+func (s *GetPersonTimelineOKApplicationJSON) GetTotal() int {
+	return s.Total
+}
+
+// SetItems sets the value of Items.
+func (s *GetPersonTimelineOKApplicationJSON) SetItems(val []TimelineItem) {
+	s.Items = val
+}
+
+// SetTotal sets the value of Total.
+func (s *GetPersonTimelineOKApplicationJSON) SetTotal(val int) {
+	s.Total = val
+}
+
+func (*GetPersonTimelineOKApplicationJSON) getPersonTimelineRes() {}
+
+type GetPersonTimelineOKTextHTML struct {
+	Data io.Reader
+}
+
+// Read reads data from the Data reader.
+//
+// Kept to satisfy the io.Reader interface.
+func (s GetPersonTimelineOKTextHTML) Read(p []byte) (n int, err error) {
+	if s.Data == nil {
+		return 0, io.EOF
+	}
+	return s.Data.Read(p)
+}
+
+func (*GetPersonTimelineOKTextHTML) getPersonTimelineRes() {}
+
 type GetPersonsOKApplicationJSON struct {
 	Persons []Person `json:"persons"`
 	// Total number of persons.
@@ -1026,6 +1078,69 @@ func (o OptNilString) Or(d string) string {
 	return d
 }
 
+// NewOptNilTimelineItemValence returns new OptNilTimelineItemValence with value set to v.
+func NewOptNilTimelineItemValence(v TimelineItemValence) OptNilTimelineItemValence {
+	return OptNilTimelineItemValence{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilTimelineItemValence is optional nullable TimelineItemValence.
+type OptNilTimelineItemValence struct {
+	Value TimelineItemValence
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilTimelineItemValence was set.
+func (o OptNilTimelineItemValence) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilTimelineItemValence) Reset() {
+	var v TimelineItemValence
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilTimelineItemValence) SetTo(v TimelineItemValence) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilTimelineItemValence) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilTimelineItemValence) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v TimelineItemValence
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilTimelineItemValence) Get() (v TimelineItemValence, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilTimelineItemValence) Or(d TimelineItemValence) TimelineItemValence {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptString returns new OptString with value set to v.
 func NewOptString(v string) OptString {
 	return OptString{
@@ -1127,6 +1242,191 @@ func (s *Person) SetUpdatedAt(val time.Time) {
 func (*Person) createPersonRes()  {}
 func (*Person) getPersonByIdRes() {}
 func (*Person) updatePersonRes()  {}
+
+// Ref: #/components/schemas/TimelineItem
+type TimelineItem struct {
+	Type        TimelineItemType          `json:"type"`
+	ID          string                    `json:"id"`
+	PersonID    string                    `json:"person_id"`
+	OccurredAt  time.Time                 `json:"occurred_at"`
+	Description string                    `json:"description"`
+	References  OptNilString              `json:"references"`
+	Valence     OptNilTimelineItemValence `json:"valence"`
+	CreatedAt   time.Time                 `json:"created_at"`
+	UpdatedAt   time.Time                 `json:"updated_at"`
+}
+
+// GetType returns the value of Type.
+func (s *TimelineItem) GetType() TimelineItemType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *TimelineItem) GetID() string {
+	return s.ID
+}
+
+// GetPersonID returns the value of PersonID.
+func (s *TimelineItem) GetPersonID() string {
+	return s.PersonID
+}
+
+// GetOccurredAt returns the value of OccurredAt.
+func (s *TimelineItem) GetOccurredAt() time.Time {
+	return s.OccurredAt
+}
+
+// GetDescription returns the value of Description.
+func (s *TimelineItem) GetDescription() string {
+	return s.Description
+}
+
+// GetReferences returns the value of References.
+func (s *TimelineItem) GetReferences() OptNilString {
+	return s.References
+}
+
+// GetValence returns the value of Valence.
+func (s *TimelineItem) GetValence() OptNilTimelineItemValence {
+	return s.Valence
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *TimelineItem) GetCreatedAt() time.Time {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *TimelineItem) GetUpdatedAt() time.Time {
+	return s.UpdatedAt
+}
+
+// SetType sets the value of Type.
+func (s *TimelineItem) SetType(val TimelineItemType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *TimelineItem) SetID(val string) {
+	s.ID = val
+}
+
+// SetPersonID sets the value of PersonID.
+func (s *TimelineItem) SetPersonID(val string) {
+	s.PersonID = val
+}
+
+// SetOccurredAt sets the value of OccurredAt.
+func (s *TimelineItem) SetOccurredAt(val time.Time) {
+	s.OccurredAt = val
+}
+
+// SetDescription sets the value of Description.
+func (s *TimelineItem) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetReferences sets the value of References.
+func (s *TimelineItem) SetReferences(val OptNilString) {
+	s.References = val
+}
+
+// SetValence sets the value of Valence.
+func (s *TimelineItem) SetValence(val OptNilTimelineItemValence) {
+	s.Valence = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *TimelineItem) SetCreatedAt(val time.Time) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *TimelineItem) SetUpdatedAt(val time.Time) {
+	s.UpdatedAt = val
+}
+
+type TimelineItemType string
+
+const (
+	TimelineItemTypeAction       TimelineItemType = "action"
+	TimelineItemTypeConversation TimelineItemType = "conversation"
+)
+
+// AllValues returns all TimelineItemType values.
+func (TimelineItemType) AllValues() []TimelineItemType {
+	return []TimelineItemType{
+		TimelineItemTypeAction,
+		TimelineItemTypeConversation,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TimelineItemType) MarshalText() ([]byte, error) {
+	switch s {
+	case TimelineItemTypeAction:
+		return []byte(s), nil
+	case TimelineItemTypeConversation:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TimelineItemType) UnmarshalText(data []byte) error {
+	switch TimelineItemType(data) {
+	case TimelineItemTypeAction:
+		*s = TimelineItemTypeAction
+		return nil
+	case TimelineItemTypeConversation:
+		*s = TimelineItemTypeConversation
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type TimelineItemValence string
+
+const (
+	TimelineItemValencePositive TimelineItemValence = "positive"
+	TimelineItemValenceNegative TimelineItemValence = "negative"
+)
+
+// AllValues returns all TimelineItemValence values.
+func (TimelineItemValence) AllValues() []TimelineItemValence {
+	return []TimelineItemValence{
+		TimelineItemValencePositive,
+		TimelineItemValenceNegative,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s TimelineItemValence) MarshalText() ([]byte, error) {
+	switch s {
+	case TimelineItemValencePositive:
+		return []byte(s), nil
+	case TimelineItemValenceNegative:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *TimelineItemValence) UnmarshalText(data []byte) error {
+	switch TimelineItemValence(data) {
+	case TimelineItemValencePositive:
+		*s = TimelineItemValencePositive
+		return nil
+	case TimelineItemValenceNegative:
+		*s = TimelineItemValenceNegative
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
 
 type UpdateActionBadRequest Error
 

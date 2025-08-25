@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/rs/xid"
@@ -185,6 +186,117 @@ func (h *PersonHandler) GetPersonsWithLastAction(ctx context.Context, params api
 	}
 
 	return templatePersons, nil
+}
+
+func (h *PersonHandler) GetPersonTimeline(ctx context.Context, params api.GetPersonTimelineParams) (api.GetPersonTimelineRes, error) {
+	// Verify person exists
+	if _, err := h.queries.GetPersonByID(ctx, params.ID); err != nil {
+		if err == sql.ErrNoRows {
+			return &api.GetPersonTimelineNotFound{
+				Message: "Person not found",
+				Code:    "NOT_FOUND",
+			}, nil
+		}
+		zap.L().Error("error getting person", zap.Error(err))
+		return &api.GetPersonTimelineInternalServerError{
+			Message: "Failed to get timeline",
+			Code:    "INTERNAL_ERROR",
+		}, nil
+	}
+
+	limit := int32(10)
+	if params.Limit.IsSet() {
+		limit = int32(params.Limit.Value)
+	}
+
+	offset := int32(0)
+	if params.Offset.IsSet() {
+		offset = int32(params.Offset.Value)
+	}
+
+	fetchLimit := limit + offset
+
+	actions, err := h.queries.ListActionsByPersonID(ctx, db.ListActionsByPersonIDParams{
+		PersonID: params.ID,
+		Offset:   0,
+		Limit:    fetchLimit,
+	})
+	if err != nil {
+		zap.L().Error("error listing actions for timeline", zap.Error(err))
+		return &api.GetPersonTimelineInternalServerError{
+			Message: "Failed to get actions",
+			Code:    "INTERNAL_ERROR",
+		}, nil
+	}
+
+	conversations, err := h.queries.ListConversationsByPersonID(ctx, db.ListConversationsByPersonIDParams{
+		PersonID: params.ID,
+		Offset:   0,
+		Limit:    fetchLimit,
+	})
+	if err != nil {
+		zap.L().Error("error listing conversations for timeline", zap.Error(err))
+		return &api.GetPersonTimelineInternalServerError{
+			Message: "Failed to get conversations",
+			Code:    "INTERNAL_ERROR",
+		}, nil
+	}
+
+	var items []api.TimelineItem
+	for _, a := range actions {
+		act := a.Action
+		item := api.TimelineItem{
+			Type:        api.TimelineItemTypeAction,
+			ID:          act.ID.String(),
+			PersonID:    act.PersonID.String(),
+			OccurredAt:  act.OccurredAt,
+			Description: act.Description,
+			CreatedAt:   act.CreatedAt,
+			UpdatedAt:   act.UpdatedAt,
+		}
+		if act.References.Valid {
+			item.References = api.OptNilString{Value: act.References.String, Set: true}
+		}
+		item.Valence = api.OptNilTimelineItemValence{Value: api.TimelineItemValence(act.Valence), Set: true}
+		items = append(items, item)
+	}
+
+	for _, c := range conversations {
+		convID, _ := xid.FromBytes(c.Conversation.ID)
+		item := api.TimelineItem{
+			Type:        api.TimelineItemTypeConversation,
+			ID:          convID.String(),
+			PersonID:    params.ID,
+			OccurredAt:  c.Conversation.OccurredAt,
+			Description: c.Conversation.Description,
+			CreatedAt:   c.Conversation.CreatedAt,
+			UpdatedAt:   c.Conversation.UpdatedAt,
+		}
+		items = append(items, item)
+	}
+
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].OccurredAt.After(items[j].OccurredAt)
+	})
+
+	totalActions, _ := h.queries.CountActionsByPersonID(ctx, params.ID)
+	totalConversations, _ := h.queries.CountConversationsByPersonID(ctx, params.ID)
+	total := int(totalActions + totalConversations)
+
+	start := int(offset)
+	if start > len(items) {
+		start = len(items)
+	}
+	end := start + int(limit)
+	if end > len(items) {
+		end = len(items)
+	}
+	page := items[start:end]
+
+	return &api.GetPersonTimelineOKApplicationJSON{
+		Items: page,
+		Total: total,
+	}, nil
 }
 
 func (h *PersonHandler) UpdatePerson(ctx context.Context, req *api.UpdatePersonRequest, params api.UpdatePersonParams) (api.UpdatePersonRes, error) {
