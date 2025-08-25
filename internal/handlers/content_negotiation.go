@@ -483,3 +483,32 @@ func (h *ContentNegotiatingHandler) GetPersonActions(ctx context.Context, params
 	// Return JSON response (default)
 	return result, nil
 }
+
+// CreateConversation handles both JSON and HTML requests for creating a conversation
+func (h *ContentNegotiatingHandler) CreateConversation(ctx context.Context, req *api.CreateConversationRequest) (api.CreateConversationRes, error) {
+	result, err := h.combinedHandler.CreateConversation(ctx, req)
+	if err != nil {
+		return result, err
+	}
+
+	if httpReq := h.getRequestFromContext(ctx); httpReq != nil {
+		if h.determineResponseType(httpReq) == "text/html" {
+			switch conv := result.(type) {
+			case *api.Conversation:
+				tmplConv := templates.Conversation{
+					ID:          conv.ID,
+					PersonID:    conv.PersonID,
+					OccurredAt:  conv.OccurredAt,
+					Description: conv.Description,
+					CreatedAt:   conv.CreatedAt,
+					UpdatedAt:   conv.UpdatedAt,
+				}
+				return &api.CreateConversationCreatedTextHTML{
+					Data: renderTemplate(templates.ConversationItem(tmplConv)),
+				}, nil
+			}
+		}
+	}
+
+	return result, nil
+}

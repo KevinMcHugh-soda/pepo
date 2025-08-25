@@ -123,6 +123,26 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 				}
 
+			case 'c': // Prefix: "conversations"
+
+				if l := len("conversations"); len(elem) >= l && elem[0:l] == "conversations" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch r.Method {
+					case "POST":
+						s.handleCreateConversationRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, "POST")
+					}
+
+					return
+				}
+
 			case 'p': // Prefix: "people"
 
 				if l := len("people"); len(elem) >= l && elem[0:l] == "people" {
@@ -382,6 +402,30 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						}
 					}
 
+				}
+
+			case 'c': // Prefix: "conversations"
+
+				if l := len("conversations"); len(elem) >= l && elem[0:l] == "conversations" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch method {
+					case "POST":
+						r.name = CreateConversationOperation
+						r.summary = "Create a new conversation"
+						r.operationID = "createConversation"
+						r.pathPattern = "/conversations"
+						r.args = args
+						r.count = 0
+						return r, true
+					default:
+						return
+					}
 				}
 
 			case 'p': // Prefix: "people"

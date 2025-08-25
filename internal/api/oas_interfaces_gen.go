@@ -5,6 +5,10 @@ type CreateActionRes interface {
 	createActionRes()
 }
 
+type CreateConversationRes interface {
+	createConversationRes()
+}
+
 type CreatePersonRes interface {
 	createPersonRes()
 }

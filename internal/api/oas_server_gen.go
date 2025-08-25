@@ -14,6 +14,12 @@ type Handler interface {
 	//
 	// POST /actions
 	CreateAction(ctx context.Context, req *CreateActionRequest) (CreateActionRes, error)
+	// CreateConversation implements createConversation operation.
+	//
+	// Create a new conversation.
+	//
+	// POST /conversations
+	CreateConversation(ctx context.Context, req *CreateConversationRequest) (CreateConversationRes, error)
 	// CreatePerson implements createPerson operation.
 	//
 	// Create a new person.

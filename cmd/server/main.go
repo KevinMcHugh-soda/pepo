@@ -38,7 +38,8 @@ func main() {
 	zap.L().Info("initializing application handlers")
 	personHandler := handlers.NewPersonHandler(queries)
 	actionHandler := handlers.NewActionHandler(queries)
-	combinedAPIHandler := handlers.NewCombinedAPIHandler(personHandler, actionHandler)
+	conversationHandler := handlers.NewConversationHandler(queries)
+	combinedAPIHandler := handlers.NewCombinedAPIHandler(personHandler, actionHandler, conversationHandler)
 
 	zap.L().Info("setting up HTTP server")
 	srv, err := server.New(cfg, combinedAPIHandler, personHandler, actionHandler)
