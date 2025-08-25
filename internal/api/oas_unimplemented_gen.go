@@ -22,6 +22,15 @@ func (UnimplementedHandler) CreateAction(ctx context.Context, req *CreateActionR
 	return r, ht.ErrNotImplemented
 }
 
+// CreateConversation implements createConversation operation.
+//
+// Create a new conversation.
+//
+// POST /conversations
+func (UnimplementedHandler) CreateConversation(ctx context.Context, req *CreateConversationRequest) (r CreateConversationRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // CreatePerson implements createPerson operation.
 //
 // Create a new person.

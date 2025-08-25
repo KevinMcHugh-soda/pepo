@@ -184,6 +184,17 @@ func (f *FormToJSONAdapter) convertConversationForm(r *http.Request) ([]byte, er
 		"description": description,
 	}
 
+	// Optional themes and actions
+	themes := r.Form["themes"]
+	if len(themes) > 0 {
+		data["themes"] = themes
+	}
+
+	actions := r.Form["actions"]
+	if len(actions) > 0 {
+		data["actions"] = actions
+	}
+
 	return json.Marshal(data)
 }
 

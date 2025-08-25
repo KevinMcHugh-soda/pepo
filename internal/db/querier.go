@@ -9,11 +9,14 @@ import (
 )
 
 type Querier interface {
+	AddActionToConversation(ctx context.Context, arg AddActionToConversationParams) error
 	AddThemeToAction(ctx context.Context, arg AddThemeToActionParams) error
+	AddThemeToConversation(ctx context.Context, arg AddThemeToConversationParams) error
 	CountActions(ctx context.Context) (int64, error)
 	CountActionsByPersonID(ctx context.Context, personID string) (int64, error)
 	CountPersons(ctx context.Context) (int64, error)
 	CreateAction(ctx context.Context, arg CreateActionParams) (CreateActionRow, error)
+	CreateConversation(ctx context.Context, arg CreateConversationParams) (Conversation, error)
 	CreatePerson(ctx context.Context, arg CreatePersonParams) (CreatePersonRow, error)
 	CreateTheme(ctx context.Context, arg CreateThemeParams) (CreateThemeRow, error)
 	DeleteAction(ctx context.Context, id string) error
