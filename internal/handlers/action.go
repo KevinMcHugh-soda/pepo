@@ -3,7 +3,9 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/rs/xid"
 
@@ -90,32 +92,6 @@ func (h *ActionHandler) CreateAction(ctx context.Context, req *api.CreateActionR
 			ThemeID:  tID,
 		}); err != nil {
 			zap.L().Error("error adding theme to action", zap.Error(err))
-			return &api.CreateActionInternalServerError{
-				Message: "Failed to associate theme",
-				Code:    "INTERNAL_ERROR",
-			}, nil
-		}
-	}
-
-	// Create a new theme if provided
-	if req.NewTheme.IsSet() {
-		themeID := xid.New().String()
-		if _, err := h.queries.CreateTheme(ctx, db.CreateThemeParams{
-			ID:       themeID,
-			PersonID: req.PersonID,
-			Text:     req.NewTheme.Value,
-		}); err != nil {
-			zap.L().Error("error creating theme", zap.Error(err))
-			return &api.CreateActionInternalServerError{
-				Message: "Failed to create theme",
-				Code:    "INTERNAL_ERROR",
-			}, nil
-		}
-		if err := h.queries.AddThemeToAction(ctx, db.AddThemeToActionParams{
-			ActionID: actionID,
-			ThemeID:  themeID,
-		}); err != nil {
-			zap.L().Error("error adding new theme to action", zap.Error(err))
 			return &api.CreateActionInternalServerError{
 				Message: "Failed to associate theme",
 				Code:    "INTERNAL_ERROR",
@@ -472,6 +448,70 @@ func (h *ActionHandler) HandleGetThemesForSelect(w http.ResponseWriter, r *http.
 		Limit:    100,
 	})
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templates.ThemeSelectError().Render(r.Context(), w)
+		return
+	}
+
+	themes := make([]templates.Theme, len(rows))
+	for i, row := range rows {
+		t := row.Theme
+		themes[i] = templates.Theme{
+			ID:       t.ID.String(),
+			Text:     t.Text,
+			Selected: selected[t.ID.String()],
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	templates.ThemeSelectOptions(themes).Render(r.Context(), w)
+}
+
+func (h *ActionHandler) HandleCreateTheme(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		PersonID string   `json:"person_id"`
+		Text     string   `json:"text"`
+		Themes   []string `json:"themes"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.ThemeSelectError().Render(r.Context(), w)
+		return
+	}
+
+	personID := strings.TrimSpace(req.PersonID)
+	text := strings.TrimSpace(req.Text)
+	if personID == "" || text == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.ThemeSelectError().Render(r.Context(), w)
+		return
+	}
+
+	themeID := xid.New().String()
+	if _, err := h.queries.CreateTheme(r.Context(), db.CreateThemeParams{
+		ID:       themeID,
+		PersonID: personID,
+		Text:     text,
+	}); err != nil {
+		zap.L().Error("error creating theme", zap.Error(err))
+		w.WriteHeader(http.StatusInternalServerError)
+		templates.ThemeSelectError().Render(r.Context(), w)
+		return
+	}
+
+	selected := map[string]bool{}
+	for _, t := range req.Themes {
+		selected[t] = true
+	}
+	selected[themeID] = true
+
+	rows, err := h.queries.ListThemesByPersonID(r.Context(), db.ListThemesByPersonIDParams{
+		PersonID: personID,
+		Offset:   0,
+		Limit:    100,
+	})
+	if err != nil {
+		zap.L().Error("error listing themes", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
 		templates.ThemeSelectError().Render(r.Context(), w)
 		return
