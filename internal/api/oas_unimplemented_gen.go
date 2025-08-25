@@ -94,6 +94,15 @@ func (UnimplementedHandler) GetPersonById(ctx context.Context, params GetPersonB
 	return r, ht.ErrNotImplemented
 }
 
+// GetPersonTimeline implements getPersonTimeline operation.
+//
+// Get timeline for a specific person.
+//
+// GET /people/{id}/timeline
+func (UnimplementedHandler) GetPersonTimeline(ctx context.Context, params GetPersonTimelineParams) (r GetPersonTimelineRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetPersons implements getPersons operation.
 //
 // Get all persons.

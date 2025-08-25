@@ -12,6 +12,7 @@ type Querier interface {
 	AddThemeToAction(ctx context.Context, arg AddThemeToActionParams) error
 	CountActions(ctx context.Context) (int64, error)
 	CountActionsByPersonID(ctx context.Context, personID string) (int64, error)
+	CountConversationsByPersonID(ctx context.Context, personID string) (int64, error)
 	CountPersons(ctx context.Context) (int64, error)
 	CreateAction(ctx context.Context, arg CreateActionParams) (CreateActionRow, error)
 	CreateConversation(ctx context.Context, arg CreateConversationParams) (CreateConversationRow, error)
@@ -32,6 +33,7 @@ type Querier interface {
 	ListActionsByPersonIDAndValence(ctx context.Context, arg ListActionsByPersonIDAndValenceParams) ([]ListActionsByPersonIDAndValenceRow, error)
 	ListActionsByThemeID(ctx context.Context, arg ListActionsByThemeIDParams) ([]ListActionsByThemeIDRow, error)
 	ListActionsByValence(ctx context.Context, arg ListActionsByValenceParams) ([]ListActionsByValenceRow, error)
+	ListConversationsByPersonID(ctx context.Context, arg ListConversationsByPersonIDParams) ([]ListConversationsByPersonIDRow, error)
 	ListPersons(ctx context.Context, arg ListPersonsParams) ([]ListPersonsRow, error)
 	ListPersonsWithLastAction(ctx context.Context, arg ListPersonsWithLastActionParams) ([]ListPersonsWithLastActionRow, error)
 	ListThemes(ctx context.Context, arg ListThemesParams) ([]ListThemesRow, error)

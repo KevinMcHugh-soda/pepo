@@ -15,6 +15,7 @@ const (
 	GetActionsOperation         OperationName = "GetActions"
 	GetPersonActionsOperation   OperationName = "GetPersonActions"
 	GetPersonByIdOperation      OperationName = "GetPersonById"
+	GetPersonTimelineOperation  OperationName = "GetPersonTimeline"
 	GetPersonsOperation         OperationName = "GetPersons"
 	UpdateActionOperation       OperationName = "UpdateAction"
 	UpdatePersonOperation       OperationName = "UpdatePerson"
