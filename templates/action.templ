@@ -86,7 +86,7 @@ templ ActionLoading() {
 templ RecordActionForm(personID string, targetSelector string) {
 	<div class="bg-white rounded-lg shadow p-6 mb-6">
 		<h2 class="text-xl font-semibold mb-4">Record New Action</h2>
-		<form hx-post="/api/v1/actions" hx-target={ targetSelector } hx-swap="afterbegin" hx-on::after-request="if(event.detail.successful) this.reset()" class="space-y-4">
+               <form hx-post="/api/v1/actions" hx-target={ targetSelector } hx-swap="afterbegin" hx-on::after-request="if(event.detail.elt === this && event.detail.successful) this.reset()" class="space-y-4">
 			if personID != "" {
 				<!-- Person is pre-selected -->
 				<input type="hidden" name="person_id" value={ personID }/>
