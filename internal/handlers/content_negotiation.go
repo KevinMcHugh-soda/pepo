@@ -143,41 +143,52 @@ func (h *ContentNegotiatingHandler) GetPersonById(ctx context.Context, params ap
 					UpdatedAt: jsonResult.UpdatedAt,
 				}
 
-				// Fetch the person's actions for the detail view
-				actionsParams := api.GetPersonActionsParams{
+				// Fetch the person's timeline for the detail view
+				timelineParams := api.GetPersonTimelineParams{
 					ID:    params.ID,
-					Limit: api.OptInt{Value: 100, Set: true}, // Get more actions for detail view
+					Limit: api.OptInt{Value: 100, Set: true},
 				}
 
-				actionsResult, err := h.combinedHandler.GetPersonActions(ctx, actionsParams)
+				timelineResult, err := h.combinedHandler.GetPersonTimeline(ctx, timelineParams)
 				if err != nil {
-					// If we can't get actions, still show the person with empty actions
 					return &api.GetPersonByIdOKTextHTML{
-						Data: renderTemplate(templates.PersonDetail(templatePerson, []templates.Action{})),
+						Data: renderTemplate(templates.PersonDetail(templatePerson, []templates.TimelineItem{})),
 					}, nil
 				}
 
-				var templateActions []templates.Action
-				if actionsJSON, ok := actionsResult.(*api.GetPersonActionsOKApplicationJSON); ok {
-					templateActions = make([]templates.Action, len(actionsJSON.Actions))
-					for i, action := range actionsJSON.Actions {
-						templateActions[i] = templates.Action{
-							ID:          action.ID,
-							PersonID:    action.PersonID,
-							OccurredAt:  action.OccurredAt,
-							Description: action.Description,
-							References:  action.References.Or(""),
-							Valence:     string(action.Valence),
-							CreatedAt:   action.CreatedAt,
-							UpdatedAt:   action.UpdatedAt,
-							PersonName:  action.PersonName.Value,
+				var templateItems []templates.TimelineItem
+				if timelineJSON, ok := timelineResult.(*api.GetPersonTimelineOKApplicationJSON); ok {
+					templateItems = make([]templates.TimelineItem, len(timelineJSON.Items))
+					for i, item := range timelineJSON.Items {
+						switch item.Type {
+						case api.TimelineItemTypeAction:
+							tmplAction := &templates.Action{
+								ID:          item.ID,
+								PersonID:    item.PersonID,
+								OccurredAt:  item.OccurredAt,
+								Description: item.Description,
+								References:  item.References.Or(""),
+								Valence:     string(item.Valence.Or("")),
+								CreatedAt:   item.CreatedAt,
+								UpdatedAt:   item.UpdatedAt,
+							}
+							templateItems[i] = templates.TimelineItem{Type: "action", Action: tmplAction}
+						case api.TimelineItemTypeConversation:
+							tmplConv := &templates.Conversation{
+								ID:          item.ID,
+								PersonID:    item.PersonID,
+								OccurredAt:  item.OccurredAt,
+								Description: item.Description,
+								CreatedAt:   item.CreatedAt,
+								UpdatedAt:   item.UpdatedAt,
+							}
+							templateItems[i] = templates.TimelineItem{Type: "conversation", Conversation: tmplConv}
 						}
 					}
 				}
 
-				// Render PersonDetail template with person and actions
 				return &api.GetPersonByIdOKTextHTML{
-					Data: renderTemplate(templates.PersonDetail(templatePerson, templateActions)),
+					Data: renderTemplate(templates.PersonDetail(templatePerson, templateItems)),
 				}, nil
 			}
 		}
@@ -505,6 +516,53 @@ func (h *ContentNegotiatingHandler) CreateConversation(ctx context.Context, req 
 				}
 				return &api.CreateConversationCreatedTextHTML{
 					Data: renderTemplate(templates.ConversationItem(tmplConv)),
+				}, nil
+			}
+		}
+	}
+
+	return result, nil
+}
+
+// GetPersonTimeline handles both JSON and HTML requests for a person's timeline
+func (h *ContentNegotiatingHandler) GetPersonTimeline(ctx context.Context, params api.GetPersonTimelineParams) (api.GetPersonTimelineRes, error) {
+	result, err := h.combinedHandler.GetPersonTimeline(ctx, params)
+	if err != nil {
+		return result, err
+	}
+
+	if req := h.getRequestFromContext(ctx); req != nil {
+		if h.determineResponseType(req) == "text/html" {
+			if jsonResult, ok := result.(*api.GetPersonTimelineOKApplicationJSON); ok {
+				templateItems := make([]templates.TimelineItem, len(jsonResult.Items))
+				for i, item := range jsonResult.Items {
+					switch item.Type {
+					case api.TimelineItemTypeAction:
+						tmplAction := &templates.Action{
+							ID:          item.ID,
+							PersonID:    item.PersonID,
+							OccurredAt:  item.OccurredAt,
+							Description: item.Description,
+							References:  item.References.Or(""),
+							Valence:     string(item.Valence.Or("")),
+							CreatedAt:   item.CreatedAt,
+							UpdatedAt:   item.UpdatedAt,
+						}
+						templateItems[i] = templates.TimelineItem{Type: "action", Action: tmplAction}
+					case api.TimelineItemTypeConversation:
+						tmplConv := &templates.Conversation{
+							ID:          item.ID,
+							PersonID:    item.PersonID,
+							OccurredAt:  item.OccurredAt,
+							Description: item.Description,
+							CreatedAt:   item.CreatedAt,
+							UpdatedAt:   item.UpdatedAt,
+						}
+						templateItems[i] = templates.TimelineItem{Type: "conversation", Conversation: tmplConv}
+					}
+				}
+				return &api.GetPersonTimelineOKTextHTML{
+					Data: renderTemplate(templates.TimelineList(templateItems)),
 				}, nil
 			}
 		}

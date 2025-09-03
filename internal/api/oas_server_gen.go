@@ -62,6 +62,12 @@ type Handler interface {
 	//
 	// GET /people/{id}
 	GetPersonById(ctx context.Context, params GetPersonByIdParams) (GetPersonByIdRes, error)
+	// GetPersonTimeline implements getPersonTimeline operation.
+	//
+	// Get timeline for a specific person.
+	//
+	// GET /people/{id}/timeline
+	GetPersonTimeline(ctx context.Context, params GetPersonTimelineParams) (GetPersonTimelineRes, error)
 	// GetPersons implements getPersons operation.
 	//
 	// Get all persons.

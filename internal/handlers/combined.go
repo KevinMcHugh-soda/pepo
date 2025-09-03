@@ -69,6 +69,10 @@ func (h *CombinedAPIHandler) GetPersonActions(ctx context.Context, params api.Ge
 	return h.actionHandler.GetPersonActions(ctx, params)
 }
 
+func (h *CombinedAPIHandler) GetPersonTimeline(ctx context.Context, params api.GetPersonTimelineParams) (api.GetPersonTimelineRes, error) {
+	return h.personHandler.GetPersonTimeline(ctx, params)
+}
+
 func (h *CombinedAPIHandler) GetPersonsWithLastAction(ctx context.Context, params api.GetPersonsParams) ([]templates.PersonWithLastAction, error) {
 	return h.personHandler.GetPersonsWithLastAction(ctx, params)
 }
