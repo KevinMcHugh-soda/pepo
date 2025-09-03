@@ -14,6 +14,34 @@ FROM person
 ORDER BY created_at DESC
 LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
+-- name: ListPersonsWithLastActivity :many
+SELECT
+    b2x(p.id) as id,
+    p.name,
+    p.created_at,
+    p.updated_at,
+    la.description AS last_action_desc,
+    la.occurred_at AS last_action_at,
+    lc.description AS last_conversation_desc,
+    lc.occurred_at AS last_conversation_at
+FROM person p
+LEFT JOIN LATERAL (
+    SELECT description, occurred_at
+    FROM action
+    WHERE person_id = p.id
+    ORDER BY occurred_at DESC
+    LIMIT 1
+) la ON TRUE
+LEFT JOIN LATERAL (
+    SELECT description, occurred_at
+    FROM conversation
+    WHERE person_id = p.id
+    ORDER BY occurred_at DESC
+    LIMIT 1
+) lc ON TRUE
+ORDER BY p.created_at DESC
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
+
 -- name: CountPersons :one
 SELECT COUNT(*) FROM person;
 
@@ -39,15 +67,3 @@ WHERE name ILIKE '%' || sqlc.arg('search') || '%'
 ORDER BY name
 LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
--- name: ListPersonsWithLastAction :many
-SELECT
-    b2x(p.id) as id,
-    p.name,
-    p.created_at,
-    p.updated_at,
-    MAX(a.occurred_at) as last_action_at
-FROM person p
-LEFT JOIN action a ON p.id = a.person_id
-GROUP BY p.id, p.name, p.created_at, p.updated_at
-ORDER BY p.created_at DESC
-LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
