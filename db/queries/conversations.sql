@@ -1,7 +1,8 @@
 -- name: CreateConversation :one
-INSERT INTO conversation (id, description, occurred_at)
+INSERT INTO conversation (id, person_id, description, occurred_at)
 VALUES (
     x2b(sqlc.arg(id)),
+    x2b(sqlc.arg(person_id)),
     sqlc.arg(description),
     sqlc.arg(occurred_at)
 )

@@ -193,6 +193,7 @@ CREATE TABLE public.conversation (
     occurred_at timestamp with time zone DEFAULT now() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    person_id bytea NOT NULL,
     CONSTRAINT conversation_description_check CHECK ((length(TRIM(BOTH FROM description)) > 0))
 );
 
@@ -394,6 +395,13 @@ CREATE INDEX idx_conversation_occurred_at ON public.conversation USING btree (oc
 
 
 --
+-- Name: idx_conversation_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_conversation_person_id ON public.conversation USING btree (person_id);
+
+
+--
 -- Name: idx_conversation_theme_conversation_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -532,6 +540,14 @@ ALTER TABLE ONLY public.action_theme
 
 
 --
+-- Name: conversation conversation_person_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.conversation
+    ADD CONSTRAINT conversation_person_id_fkey FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
+
+
+--
 -- Name: conversation_theme conversation_theme_conversation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -569,4 +585,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250730152732'),
     ('20250730204830'),
     ('20250730221000'),
-    ('20250730230000');
+    ('20250730230000'),
+    ('20250730230100');

@@ -98,6 +98,7 @@ type ActionTheme struct {
 
 type Conversation struct {
 	ID          []byte    `db:"id" json:"id"`
+	PersonID    []byte    `db:"person_id" json:"person_id"`
 	Description string    `db:"description" json:"description"`
 	OccurredAt  time.Time `db:"occurred_at" json:"occurred_at"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`

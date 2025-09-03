@@ -20,6 +20,12 @@ func NewConversationHandler(queries *db.Queries) *ConversationHandler {
 
 // CreateConversation handles creating a conversation
 func (h *ConversationHandler) CreateConversation(ctx context.Context, req *api.CreateConversationRequest) (api.CreateConversationRes, error) {
+	if req.PersonID == "" {
+		return &api.CreateConversationBadRequest{
+			Message: "Person ID is required",
+			Code:    "VALIDATION_ERROR",
+		}, nil
+	}
 	if req.Description == "" {
 		return &api.CreateConversationBadRequest{
 			Message: "Description is required",
@@ -31,6 +37,7 @@ func (h *ConversationHandler) CreateConversation(ctx context.Context, req *api.C
 
 	row, err := h.queries.CreateConversation(ctx, db.CreateConversationParams{
 		ID:          id,
+		PersonID:    req.PersonID,
 		Description: req.Description,
 		OccurredAt:  req.OccurredAt,
 	})
