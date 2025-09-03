@@ -189,6 +189,7 @@ CREATE TABLE public.action_theme (
 
 CREATE TABLE public.conversation (
     id bytea NOT NULL,
+    person_id bytea NOT NULL,
     description text NOT NULL,
     occurred_at timestamp with time zone DEFAULT now() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -394,6 +395,13 @@ CREATE INDEX idx_conversation_occurred_at ON public.conversation USING btree (oc
 
 
 --
+-- Name: idx_conversation_person_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_conversation_person_id ON public.conversation USING btree (person_id);
+
+
+--
 -- Name: idx_conversation_theme_conversation_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -475,6 +483,14 @@ CREATE TRIGGER update_conversation_theme_updated_at BEFORE UPDATE ON public.conv
 --
 
 CREATE TRIGGER update_conversation_updated_at BEFORE UPDATE ON public.conversation FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: conversation conversation_person_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.conversation
+    ADD CONSTRAINT conversation_person_id_fkey FOREIGN KEY (person_id) REFERENCES public.person(id) ON DELETE CASCADE;
 
 
 --
