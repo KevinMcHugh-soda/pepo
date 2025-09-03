@@ -20,10 +20,10 @@ SELECT
     p.name,
     p.created_at,
     p.updated_at,
-    la.description AS last_action_desc,
-    la.occurred_at AS last_action_at,
-    lc.description AS last_conversation_desc,
-    lc.occurred_at AS last_conversation_at
+    COALESCE(la.description, '') AS last_action_desc,
+    COALESCE(la.occurred_at, '0001-01-01T00:00:00Z'::timestamptz) AS last_action_at,
+    COALESCE(lc.description, '') AS last_conversation_desc,
+    COALESCE(lc.occurred_at, '0001-01-01T00:00:00Z'::timestamptz) AS last_conversation_at
 FROM person p
 LEFT JOIN LATERAL (
     SELECT description, occurred_at
