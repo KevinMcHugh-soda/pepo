@@ -872,12 +872,34 @@ func (s *CreateConversationRequest) encodeFields(e *jx.Encoder) {
 		e.FieldStart("description")
 		e.Str(s.Description)
 	}
+	{
+		if s.Actions != nil {
+			e.FieldStart("actions")
+			e.ArrStart()
+			for _, elem := range s.Actions {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.Themes != nil {
+			e.FieldStart("themes")
+			e.ArrStart()
+			for _, elem := range s.Themes {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
 }
 
-var jsonFieldsNameOfCreateConversationRequest = [3]string{
+var jsonFieldsNameOfCreateConversationRequest = [5]string{
 	0: "person_id",
 	1: "occurred_at",
 	2: "description",
+	3: "actions",
+	4: "themes",
 }
 
 // Decode decodes CreateConversationRequest from json.
@@ -924,6 +946,44 @@ func (s *CreateConversationRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"description\"")
+			}
+		case "actions":
+			if err := func() error {
+				s.Actions = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.Actions = append(s.Actions, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"actions\"")
+			}
+		case "themes":
+			if err := func() error {
+				s.Themes = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.Themes = append(s.Themes, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"themes\"")
 			}
 		default:
 			return d.Skip()

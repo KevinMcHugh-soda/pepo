@@ -426,6 +426,10 @@ type CreateConversationRequest struct {
 	OccurredAt time.Time `json:"occurred_at"`
 	// Description of the conversation.
 	Description string `json:"description"`
+	// IDs of actions associated with the conversation.
+	Actions []string `json:"actions"`
+	// IDs of themes associated with the conversation.
+	Themes []string `json:"themes"`
 }
 
 // GetPersonID returns the value of PersonID.
@@ -443,6 +447,16 @@ func (s *CreateConversationRequest) GetDescription() string {
 	return s.Description
 }
 
+// GetActions returns the value of Actions.
+func (s *CreateConversationRequest) GetActions() []string {
+	return s.Actions
+}
+
+// GetThemes returns the value of Themes.
+func (s *CreateConversationRequest) GetThemes() []string {
+	return s.Themes
+}
+
 // SetPersonID sets the value of PersonID.
 func (s *CreateConversationRequest) SetPersonID(val string) {
 	s.PersonID = val
@@ -456,6 +470,16 @@ func (s *CreateConversationRequest) SetOccurredAt(val time.Time) {
 // SetDescription sets the value of Description.
 func (s *CreateConversationRequest) SetDescription(val string) {
 	s.Description = val
+}
+
+// SetActions sets the value of Actions.
+func (s *CreateConversationRequest) SetActions(val []string) {
+	s.Actions = val
+}
+
+// SetThemes sets the value of Themes.
+func (s *CreateConversationRequest) SetThemes(val []string) {
+	s.Themes = val
 }
 
 type CreatePersonBadRequest Error
