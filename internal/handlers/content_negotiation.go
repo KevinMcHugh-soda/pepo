@@ -93,7 +93,7 @@ func (h *ContentNegotiatingHandler) GetPersons(ctx context.Context, params api.G
 				}
 			} else {
 				// For regular list, get persons with last action data
-				templatePersons, err := h.combinedHandler.GetPersonsWithLastAction(ctx, params)
+				templatePersons, err := h.combinedHandler.GetPersonsWithLastActivity(ctx, params)
 				if err != nil {
 					return &api.Error{
 						Message: "Failed to get people with last actions",
@@ -103,7 +103,7 @@ func (h *ContentNegotiatingHandler) GetPersons(ctx context.Context, params api.G
 
 				// Render person list with last action template
 				return &api.GetPersonsOKTextHTML{
-					Data: renderTemplate(templates.PersonWithLastActionList(templatePersons)),
+					Data: renderTemplate(templates.PersonWithLastActivityTable(templatePersons)),
 				}, nil
 			}
 		}

@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"net/http"
 	"sort"
-	"time"
 
 	"github.com/rs/xid"
 
@@ -137,7 +136,7 @@ func (h *PersonHandler) GetPersons(ctx context.Context, params api.GetPersonsPar
 	}, nil
 }
 
-func (h *PersonHandler) GetPersonsWithLastAction(ctx context.Context, params api.GetPersonsParams) ([]templates.PersonWithLastAction, error) {
+func (h *PersonHandler) GetPersonsWithLastActivity(ctx context.Context, params api.GetPersonsParams) ([]templates.PersonWithLastActivity, error) {
 	limit := int32(10)
 	if params.Limit.IsSet() {
 		limit = int32(params.Limit.Value)
@@ -148,41 +147,38 @@ func (h *PersonHandler) GetPersonsWithLastAction(ctx context.Context, params api
 		offset = int32(params.Offset.Value)
 	}
 
-	// Get persons with last action data
-	persons, err := h.queries.ListPersonsWithLastAction(ctx, db.ListPersonsWithLastActionParams{
+	persons, err := h.queries.ListPersonsWithLastActivity(ctx, db.ListPersonsWithLastActivityParams{
 		Limit:  limit,
 		Offset: offset,
 	})
 	if err != nil {
-		zap.L().Error("error listing persons with last action", zap.Error(err))
+		zap.L().Error("error listing persons with last activity", zap.Error(err))
 		return nil, err
 	}
 
-	// Convert to template PersonWithLastAction
-	templatePersons := make([]templates.PersonWithLastAction, len(persons))
+	templatePersons := make([]templates.PersonWithLastActivity, len(persons))
 	for i, person := range persons {
-		templatePerson := templates.PersonWithLastAction{
+		tmpl := templates.PersonWithLastActivity{
 			ID:        person.ID,
 			Name:      person.Name,
 			CreatedAt: person.CreatedAt,
 			UpdatedAt: person.UpdatedAt,
 		}
-
-		// Handle the last_action_at which might be nil or different types
-		if person.LastActionAt != nil {
-			switch v := person.LastActionAt.(type) {
-			case time.Time:
-				if !v.IsZero() {
-					templatePerson.LastActionAt = &v
-				}
-			case *time.Time:
-				if v != nil && !v.IsZero() {
-					templatePerson.LastActionAt = v
-				}
-			}
+		if person.LastActionDesc != "" {
+			tmpl.LastActionDesc = person.LastActionDesc
 		}
-
-		templatePersons[i] = templatePerson
+		if !person.LastActionAt.IsZero() {
+			t := person.LastActionAt
+			tmpl.LastActionAt = &t
+		}
+		if person.LastConversationDesc != "" {
+			tmpl.LastConversationDesc = person.LastConversationDesc
+		}
+		if !person.LastConversationAt.IsZero() {
+			t := person.LastConversationAt
+			tmpl.LastConversationAt = &t
+		}
+		templatePersons[i] = tmpl
 	}
 
 	return templatePersons, nil

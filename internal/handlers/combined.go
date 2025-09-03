@@ -73,8 +73,8 @@ func (h *CombinedAPIHandler) GetPersonTimeline(ctx context.Context, params api.G
 	return h.personHandler.GetPersonTimeline(ctx, params)
 }
 
-func (h *CombinedAPIHandler) GetPersonsWithLastAction(ctx context.Context, params api.GetPersonsParams) ([]templates.PersonWithLastAction, error) {
-	return h.personHandler.GetPersonsWithLastAction(ctx, params)
+func (h *CombinedAPIHandler) GetPersonsWithLastActivity(ctx context.Context, params api.GetPersonsParams) ([]templates.PersonWithLastActivity, error) {
+	return h.personHandler.GetPersonsWithLastActivity(ctx, params)
 }
 
 // Conversation API methods
