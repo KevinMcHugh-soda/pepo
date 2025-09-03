@@ -53,19 +53,7 @@ func Index() templ.Component {
 					}()
 				}
 				ctx = templ.InitializeContext(ctx)
-				templ_7745c5c3_Err = RecordActionForm("", "#actions-dump").Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, " ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = RecordConversationForm("", "#conversations-dump").Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " <div id=\"actions-dump\" class=\"hidden\"></div><div id=\"conversations-dump\" class=\"hidden\"></div><div id=\"people-table\" hx-get=\"/api/v1/people\" hx-trigger=\"load\"><p class=\"text-gray-500\">Loading...</p></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mb-4 flex space-x-4\"><a href=\"/actions/new\" class=\"bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded\">Add Action</a> <a href=\"/conversations/new\" class=\"bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded\">Add Conversation</a></div><div id=\"people-table\" hx-get=\"/api/v1/people\" hx-trigger=\"load\"><p class=\"text-gray-500\">Loading...</p></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

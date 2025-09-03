@@ -196,10 +196,10 @@ templ PersonDetail(person Person, timeline []TimelineItem) {
                                         <h1 class="text-2xl font-bold text-gray-900 mb-2">{ person.Name }</h1>
                                 </div>
                         </div>
-                        <!-- Record Conversation Form -->
-                        @RecordConversationForm(person.ID, "#timeline-list")
-                        <!-- Record Action Form -->
-                        @RecordActionForm(person.ID, "#timeline-list")
+                        <div class="mb-6 flex space-x-4">
+                                <a href={ "/conversations/new?person_id=" + person.ID } class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Add Conversation</a>
+                                <a href={ "/actions/new?person_id=" + person.ID } class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Add Action</a>
+                        </div>
                         <!-- Timeline section -->
                         <div class="bg-white rounded-lg shadow p-6">
                                 <div class="flex justify-between items-center mb-4">

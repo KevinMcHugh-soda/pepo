@@ -84,3 +84,10 @@ templ RecordConversationForm(personID string, targetSelector string) {
         </div>
 }
 
+templ RecordConversationPage(personID string) {
+        @Layout("Record Conversation") {
+                @RecordConversationForm(personID, "#conversation-form-result")
+                <div id="conversation-form-result" class="mt-4"></div>
+        }
+}
+

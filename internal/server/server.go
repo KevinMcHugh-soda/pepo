@@ -139,6 +139,8 @@ func setupRoutes(apiServer *api.Server, personHandler *handlers.PersonHandler, a
 	mux.Handle("/people", createConvenienceHandler(apiServer, "/people"))
 	mux.HandleFunc("/actions/", createActionHandler(apiServer, actionHandler))
 	mux.Handle("/actions", createConvenienceHandler(apiServer, "/actions"))
+	mux.HandleFunc("/conversations/", createConversationHandler(apiServer))
+	mux.Handle("/conversations", createConvenienceHandler(apiServer, "/conversations"))
 
 	// Static file serving for development
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -159,43 +161,69 @@ func createConvenienceHandler(apiServer *api.Server, prefix string) http.Handler
 // while forwarding other requests to the API server.
 func createActionHandler(apiServer *api.Server, actionHandler *handlers.ActionHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet && strings.HasSuffix(r.URL.Path, "/edit") {
-			id := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/actions/"), "/edit")
-			params := api.GetActionByIdParams{ID: id}
-			res, err := actionHandler.GetActionById(r.Context(), params)
-			if err != nil {
-				log.Printf("Error getting action: %v", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-			switch action := res.(type) {
-			case *api.Action:
-				tmplAction := templates.Action{
-					ID:          action.ID,
-					PersonID:    action.PersonID,
-					OccurredAt:  action.OccurredAt,
-					Description: action.Description,
-					References:  action.References.Or(""),
-					Valence:     string(action.Valence),
-					CreatedAt:   action.CreatedAt,
-					UpdatedAt:   action.UpdatedAt,
+		if r.Method == http.MethodGet {
+			switch {
+			case strings.HasSuffix(r.URL.Path, "/edit"):
+				id := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/actions/"), "/edit")
+				params := api.GetActionByIdParams{ID: id}
+				res, err := actionHandler.GetActionById(r.Context(), params)
+				if err != nil {
+					log.Printf("Error getting action: %v", err)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
 				}
+				switch action := res.(type) {
+				case *api.Action:
+					tmplAction := templates.Action{
+						ID:          action.ID,
+						PersonID:    action.PersonID,
+						OccurredAt:  action.OccurredAt,
+						Description: action.Description,
+						References:  action.References.Or(""),
+						Valence:     string(action.Valence),
+						CreatedAt:   action.CreatedAt,
+						UpdatedAt:   action.UpdatedAt,
+					}
+					w.Header().Set("Content-Type", "text/html")
+					w.WriteHeader(http.StatusOK)
+					if err := templates.EditActionPage(tmplAction).Render(r.Context(), w); err != nil {
+						log.Printf("Error rendering template: %v", err)
+					}
+					return
+				case *api.GetActionByIdNotFound:
+					http.NotFound(w, r)
+					return
+				default:
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+			case r.URL.Path == "/actions/new":
+				personID := r.URL.Query().Get("person_id")
 				w.Header().Set("Content-Type", "text/html")
 				w.WriteHeader(http.StatusOK)
-				if err := templates.EditActionPage(tmplAction).Render(r.Context(), w); err != nil {
+				if err := templates.RecordActionPage(personID).Render(r.Context(), w); err != nil {
 					log.Printf("Error rendering template: %v", err)
 				}
-				return
-			case *api.GetActionByIdNotFound:
-				http.NotFound(w, r)
-				return
-			default:
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
 		}
 
 		// Forward other requests to the API server
+		apiServer.ServeHTTP(w, r)
+	}
+}
+
+func createConversationHandler(apiServer *api.Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet && r.URL.Path == "/conversations/new" {
+			personID := r.URL.Query().Get("person_id")
+			w.Header().Set("Content-Type", "text/html")
+			w.WriteHeader(http.StatusOK)
+			if err := templates.RecordConversationPage(personID).Render(r.Context(), w); err != nil {
+				log.Printf("Error rendering template: %v", err)
+			}
+			return
+		}
 		apiServer.ServeHTTP(w, r)
 	}
 }

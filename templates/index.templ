@@ -3,10 +3,10 @@ package templates
 templ Index() {
         @Layout("Peppo!") {
                 @LockWrapper() {
-                        @RecordActionForm("", "#actions-dump")
-                        @RecordConversationForm("", "#conversations-dump")
-                        <div id="actions-dump" class="hidden"></div>
-                        <div id="conversations-dump" class="hidden"></div>
+                        <div class="mb-4 flex space-x-4">
+                                <a href="/actions/new" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Add Action</a>
+                                <a href="/conversations/new" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Add Conversation</a>
+                        </div>
                         <div id="people-table" hx-get="/api/v1/people" hx-trigger="load">
                                 <p class="text-gray-500">Loading...</p>
                         </div>

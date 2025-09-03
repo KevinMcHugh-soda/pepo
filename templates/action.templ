@@ -349,3 +349,10 @@ templ EditActionPage(action Action) {
                 @EditActionForm(action)
         }
 }
+
+templ RecordActionPage(personID string) {
+        @Layout("Record Action") {
+                @RecordActionForm(personID, "#action-form-result")
+                <div id="action-form-result" class="mt-4"></div>
+        }
+}
