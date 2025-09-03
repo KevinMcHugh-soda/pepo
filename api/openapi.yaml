@@ -887,6 +887,18 @@ components:
           description: Description of the conversation
           minLength: 1
           example: "Discussed quarterly goals"
+        actions:
+          type: array
+          description: IDs of actions associated with the conversation
+          items:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+        themes:
+          type: array
+          description: IDs of themes associated with the conversation
+          items:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
       required:
         - person_id
         - occurred_at

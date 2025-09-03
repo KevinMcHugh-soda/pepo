@@ -243,6 +243,32 @@ func (f *FormToJSONAdapter) convertConversationForm(r *http.Request) ([]byte, er
 		"description": description,
 	}
 
+	if actions := r.Form["actions"]; len(actions) > 0 {
+		clean := make([]string, 0, len(actions))
+		for _, a := range actions {
+			a = strings.TrimSpace(a)
+			if a != "" {
+				clean = append(clean, a)
+			}
+		}
+		if len(clean) > 0 {
+			data["actions"] = clean
+		}
+	}
+
+	if themes := r.Form["themes"]; len(themes) > 0 {
+		clean := make([]string, 0, len(themes))
+		for _, t := range themes {
+			t = strings.TrimSpace(t)
+			if t != "" {
+				clean = append(clean, t)
+			}
+		}
+		if len(clean) > 0 {
+			data["themes"] = clean
+		}
+	}
+
 	return json.Marshal(data)
 }
 
