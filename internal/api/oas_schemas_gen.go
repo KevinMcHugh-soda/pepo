@@ -1267,6 +1267,32 @@ func (*Person) createPersonRes()  {}
 func (*Person) getPersonByIdRes() {}
 func (*Person) updatePersonRes()  {}
 
+// Ref: #/components/schemas/Theme
+type Theme struct {
+	ID   string `json:"id"`
+	Text string `json:"text"`
+}
+
+// GetID returns the value of ID.
+func (s *Theme) GetID() string {
+	return s.ID
+}
+
+// GetText returns the value of Text.
+func (s *Theme) GetText() string {
+	return s.Text
+}
+
+// SetID sets the value of ID.
+func (s *Theme) SetID(val string) {
+	s.ID = val
+}
+
+// SetText sets the value of Text.
+func (s *Theme) SetText(val string) {
+	s.Text = val
+}
+
 // Ref: #/components/schemas/TimelineItem
 type TimelineItem struct {
 	Type        TimelineItemType          `json:"type"`
@@ -1274,6 +1300,7 @@ type TimelineItem struct {
 	PersonID    string                    `json:"person_id"`
 	OccurredAt  time.Time                 `json:"occurred_at"`
 	Description string                    `json:"description"`
+	Themes      []Theme                   `json:"themes"`
 	References  OptNilString              `json:"references"`
 	Valence     OptNilTimelineItemValence `json:"valence"`
 	CreatedAt   time.Time                 `json:"created_at"`
@@ -1303,6 +1330,11 @@ func (s *TimelineItem) GetOccurredAt() time.Time {
 // GetDescription returns the value of Description.
 func (s *TimelineItem) GetDescription() string {
 	return s.Description
+}
+
+// GetThemes returns the value of Themes.
+func (s *TimelineItem) GetThemes() []Theme {
+	return s.Themes
 }
 
 // GetReferences returns the value of References.
@@ -1348,6 +1380,11 @@ func (s *TimelineItem) SetOccurredAt(val time.Time) {
 // SetDescription sets the value of Description.
 func (s *TimelineItem) SetDescription(val string) {
 	s.Description = val
+}
+
+// SetThemes sets the value of Themes.
+func (s *TimelineItem) SetThemes(val []Theme) {
+	s.Themes = val
 }
 
 // SetReferences sets the value of References.

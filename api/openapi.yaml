@@ -729,6 +729,10 @@ components:
           format: date-time
         description:
           type: string
+        themes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Theme"
         references:
           type: string
           nullable: true
@@ -750,6 +754,18 @@ components:
         - description
         - created_at
         - updated_at
+
+    Theme:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: "^[0-9a-v]{20}$"
+        text:
+          type: string
+      required:
+        - id
+        - text
 
     CreateActionRequest:
       type: object

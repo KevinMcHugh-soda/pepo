@@ -254,6 +254,16 @@ func (h *PersonHandler) GetPersonTimeline(ctx context.Context, params api.GetPer
 			item.References = api.OptNilString{Value: act.References.String, Set: true}
 		}
 		item.Valence = api.OptNilTimelineItemValence{Value: api.TimelineItemValence(act.Valence), Set: true}
+		if themeRows, err := h.queries.ListThemesByActionID(ctx, db.ListThemesByActionIDParams{
+			ActionID: act.ID.String(),
+			Offset:   0,
+			Limit:    100,
+		}); err == nil {
+			item.Themes = make([]api.Theme, len(themeRows))
+			for i, row := range themeRows {
+				item.Themes[i] = api.Theme{ID: row.Theme.ID.String(), Text: row.Theme.Text}
+			}
+		}
 		items = append(items, item)
 	}
 
@@ -267,6 +277,16 @@ func (h *PersonHandler) GetPersonTimeline(ctx context.Context, params api.GetPer
 			Description: c.Conversation.Description,
 			CreatedAt:   c.Conversation.CreatedAt,
 			UpdatedAt:   c.Conversation.UpdatedAt,
+		}
+		if themeRows, err := h.queries.ListThemesByConversationID(ctx, db.ListThemesByConversationIDParams{
+			ConversationID: convID.String(),
+			Offset:         0,
+			Limit:          100,
+		}); err == nil {
+			item.Themes = make([]api.Theme, len(themeRows))
+			for i, row := range themeRows {
+				item.Themes[i] = api.Theme{ID: row.Theme.ID.String(), Text: row.Theme.Text}
+			}
 		}
 		items = append(items, item)
 	}

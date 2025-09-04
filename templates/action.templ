@@ -3,15 +3,16 @@ package templates
 import "time"
 
 type Action struct {
-	ID          string    `json:"id"`
-	PersonID    string    `json:"person_id"`
-	OccurredAt  time.Time `json:"occurred_at"`
-	Description string    `json:"description"`
-	References  string    `json:"references,omitempty"`
-	Valence     string    `json:"valence"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	PersonName  string    `json:"person_name"`
+        ID          string    `json:"id"`
+        PersonID    string    `json:"person_id"`
+        OccurredAt  time.Time `json:"occurred_at"`
+        Description string    `json:"description"`
+        References  string    `json:"references,omitempty"`
+        Valence     string    `json:"valence"`
+        CreatedAt   time.Time `json:"created_at"`
+        UpdatedAt   time.Time `json:"updated_at"`
+        PersonName  string    `json:"person_name"`
+       Themes      []Theme   `json:"themes"`
 }
 
 func getValenceColor(valence string) string {
@@ -37,8 +38,15 @@ templ ActionItem(action Action) {
 					<span class={ "font-medium capitalize " + getValenceColor(action.Valence) }>{ action.Valence }</span>
 					<span class="text-xs text-gray-500">{ action.PersonName }</span>
 				</div>
-				<p class="text-gray-800 mb-1">{ action.Description }</p>
-				if action.References != "" {
+                                <p class="text-gray-800 mb-1">{ action.Description }</p>
+                               if len(action.Themes) > 0 {
+                                       <div class="flex flex-wrap gap-1 mb-1">
+                                               for _, theme := range action.Themes {
+                                                       <span class="inline-block bg-gray-200 text-gray-700 text-xs px-2 py-0.5 rounded-full">{ theme.Text }</span>
+                                               }
+                                       </div>
+                               }
+                               if action.References != "" {
 					<div class="text-xs text-blue-600 mt-1">
 						<a href={ templ.URL(action.References) } target="_blank" class="underline">Reference</a>
 					</div>
