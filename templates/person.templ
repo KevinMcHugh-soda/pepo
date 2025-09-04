@@ -185,7 +185,7 @@ templ PersonSelectLoading() {
 }
 
 templ PersonDetail(person Person, timeline []TimelineItem) {
-        @Layout(person.Name + " - Person Details") {
+        @Layout("Person Details") {
 		        @LockWrapper() {
 			<!-- Header with back button -->
                         <div class="mb-6">
