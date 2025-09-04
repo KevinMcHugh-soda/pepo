@@ -530,3 +530,35 @@ func (h *ActionHandler) HandleCreateTheme(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "text/html")
 	templates.ThemeSelectOptions(themes).Render(r.Context(), w)
 }
+
+func (h *ActionHandler) HandleGetActionsForSelect(w http.ResponseWriter, r *http.Request) {
+	personID := r.URL.Query().Get("person_id")
+	if personID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.ActionSelectError().Render(r.Context(), w)
+		return
+	}
+
+	rows, err := h.queries.ListActionsByPersonID(r.Context(), db.ListActionsByPersonIDParams{
+		PersonID: personID,
+		Offset:   0,
+		Limit:    100,
+	})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		templates.ActionSelectError().Render(r.Context(), w)
+		return
+	}
+
+	actions := make([]templates.ActionOption, len(rows))
+	for i, row := range rows {
+		a := row.Action
+		actions[i] = templates.ActionOption{
+			ID:          a.ID.String(),
+			Description: a.Description,
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	templates.ActionSelectOptions(actions).Render(r.Context(), w)
+}

@@ -128,6 +128,7 @@ func setupRoutes(apiServer *api.Server, personHandler *handlers.PersonHandler, a
 
 	// Legacy form handlers for HTMX compatibility (keeping for now)
 	mux.HandleFunc("/forms/people/select", personHandler.HandleGetPersonsForSelect)
+	mux.HandleFunc("/forms/actions/select", actionHandler.HandleGetActionsForSelect)
 	mux.HandleFunc("/forms/themes/select", actionHandler.HandleGetThemesForSelect)
 	mux.HandleFunc("/forms/themes/create", actionHandler.HandleCreateTheme)
 
