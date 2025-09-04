@@ -41,6 +41,7 @@ type Querier interface {
 	ListThemes(ctx context.Context, arg ListThemesParams) ([]ListThemesRow, error)
 	ListThemesByActionID(ctx context.Context, arg ListThemesByActionIDParams) ([]ListThemesByActionIDRow, error)
 	ListThemesByPersonID(ctx context.Context, arg ListThemesByPersonIDParams) ([]ListThemesByPersonIDRow, error)
+	ListThemesByConversationID(ctx context.Context, arg ListThemesByConversationIDParams) ([]ListThemesByConversationIDRow, error)
 	RemoveThemeFromAction(ctx context.Context, arg RemoveThemeFromActionParams) error
 	SearchActionsByDescription(ctx context.Context, arg SearchActionsByDescriptionParams) ([]SearchActionsByDescriptionRow, error)
 	SearchPersonsByName(ctx context.Context, arg SearchPersonsByNameParams) ([]SearchPersonsByNameRow, error)

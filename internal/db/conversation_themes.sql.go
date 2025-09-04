@@ -23,3 +23,51 @@ func (q *Queries) AddThemeToConversation(ctx context.Context, arg AddThemeToConv
 	_, err := q.db.ExecContext(ctx, addThemeToConversation, arg.ConversationID, arg.ThemeID)
 	return err
 }
+
+const listThemesByConversationID = `-- name: ListThemesByConversationID :many
+SELECT theme.id, theme.person_id, theme.text, theme.created_at, theme.updated_at
+FROM conversation_theme ct
+JOIN theme ON ct.theme_id = theme.id
+WHERE ct.conversation_id = x2b($1)
+ORDER BY theme.created_at DESC
+LIMIT $3 OFFSET $2
+`
+
+type ListThemesByConversationIDParams struct {
+	ConversationID string `db:"conversation_id" json:"conversation_id"`
+	Offset         int32  `db:"offset" json:"offset"`
+	Limit          int32  `db:"limit" json:"limit"`
+}
+
+type ListThemesByConversationIDRow struct {
+	Theme Theme `db:"theme" json:"theme"`
+}
+
+func (q *Queries) ListThemesByConversationID(ctx context.Context, arg ListThemesByConversationIDParams) ([]ListThemesByConversationIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, listThemesByConversationID, arg.ConversationID, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListThemesByConversationIDRow{}
+	for rows.Next() {
+		var i ListThemesByConversationIDRow
+		if err := rows.Scan(
+			&i.Theme.ID,
+			&i.Theme.PersonID,
+			&i.Theme.Text,
+			&i.Theme.CreatedAt,
+			&i.Theme.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

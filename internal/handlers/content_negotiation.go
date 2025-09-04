@@ -172,6 +172,13 @@ func (h *ContentNegotiatingHandler) GetPersonById(ctx context.Context, params ap
 								CreatedAt:   item.CreatedAt,
 								UpdatedAt:   item.UpdatedAt,
 							}
+							if len(item.Themes) > 0 {
+								tmplThemes := make([]templates.Theme, len(item.Themes))
+								for j, th := range item.Themes {
+									tmplThemes[j] = templates.Theme{ID: th.ID, Text: th.Text}
+								}
+								tmplAction.Themes = tmplThemes
+							}
 							templateItems[i] = templates.TimelineItem{Type: "action", Action: tmplAction}
 						case api.TimelineItemTypeConversation:
 							tmplConv := &templates.Conversation{
@@ -181,6 +188,13 @@ func (h *ContentNegotiatingHandler) GetPersonById(ctx context.Context, params ap
 								Description: item.Description,
 								CreatedAt:   item.CreatedAt,
 								UpdatedAt:   item.UpdatedAt,
+							}
+							if len(item.Themes) > 0 {
+								tmplThemes := make([]templates.Theme, len(item.Themes))
+								for j, th := range item.Themes {
+									tmplThemes[j] = templates.Theme{ID: th.ID, Text: th.Text}
+								}
+								tmplConv.Themes = tmplThemes
 							}
 							templateItems[i] = templates.TimelineItem{Type: "conversation", Conversation: tmplConv}
 						}
@@ -548,6 +562,13 @@ func (h *ContentNegotiatingHandler) GetPersonTimeline(ctx context.Context, param
 							CreatedAt:   item.CreatedAt,
 							UpdatedAt:   item.UpdatedAt,
 						}
+						if len(item.Themes) > 0 {
+							tmplThemes := make([]templates.Theme, len(item.Themes))
+							for j, th := range item.Themes {
+								tmplThemes[j] = templates.Theme{ID: th.ID, Text: th.Text}
+							}
+							tmplAction.Themes = tmplThemes
+						}
 						templateItems[i] = templates.TimelineItem{Type: "action", Action: tmplAction}
 					case api.TimelineItemTypeConversation:
 						tmplConv := &templates.Conversation{
@@ -557,6 +578,13 @@ func (h *ContentNegotiatingHandler) GetPersonTimeline(ctx context.Context, param
 							Description: item.Description,
 							CreatedAt:   item.CreatedAt,
 							UpdatedAt:   item.UpdatedAt,
+						}
+						if len(item.Themes) > 0 {
+							tmplThemes := make([]templates.Theme, len(item.Themes))
+							for j, th := range item.Themes {
+								tmplThemes[j] = templates.Theme{ID: th.ID, Text: th.Text}
+							}
+							tmplConv.Themes = tmplThemes
 						}
 						templateItems[i] = templates.TimelineItem{Type: "conversation", Conversation: tmplConv}
 					}
