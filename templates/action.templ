@@ -39,11 +39,12 @@ templ ActionItem(action Action) {
 	<div class="border-b pb-3 mb-3" id={ "action-" + action.ID }>
 		<div class="flex justify-between items-start">
 			<div class="flex-1">
-				<div class="flex items-center gap-2 mb-1">
-					<span class={ "inline-block w-2 h-2 rounded-full " + getBgColorForValence(action.Valence) }></span>
-					<span class={ "font-medium capitalize " + getValenceColor(action.Valence) }>{ action.Valence }</span>
-					<span class="text-xs text-gray-500">{ action.PersonName }</span>
-				</div>
+                                <div class="flex items-center gap-2 mb-1">
+                                        <span class={ "inline-block w-2 h-2 rounded-full " + getBgColorForValence(action.Valence) }></span>
+                                        <span class={ "font-medium capitalize " + getValenceColor(action.Valence) }>{ action.Valence }</span>
+                                        <span class="text-xs text-gray-500 uppercase">Action</span>
+                                        <span class="text-xs text-gray-500">{ action.PersonName }</span>
+                                </div>
                                 <p class="text-gray-800 mb-1">{ action.Description }</p>
                                if len(action.Themes) > 0 {
                                        <div class="flex flex-wrap gap-1 mb-1">
