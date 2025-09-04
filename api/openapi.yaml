@@ -247,6 +247,118 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /conversations/{id}:
+    get:
+      summary: Get a conversation by ID
+      operationId: getConversationById
+      tags:
+        - conversations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Conversation ID
+          schema:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+            text/html:
+              schema:
+                type: string
+        "404":
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Update a conversation
+      operationId: updateConversation
+      tags:
+        - conversations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Conversation ID
+          schema:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateConversationRequest"
+      responses:
+        "200":
+          description: Conversation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+            text/html:
+              schema:
+                type: string
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Delete a conversation
+      operationId: deleteConversation
+      tags:
+        - conversations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Conversation ID
+          schema:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+      responses:
+        "204":
+          description: Conversation deleted successfully
+        "404":
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /actions:
     get:
       summary: Get all actions
@@ -886,6 +998,41 @@ components:
         - updated_at
 
     CreateConversationRequest:
+      type: object
+      properties:
+        person_id:
+          type: string
+          description: ID of the person this conversation relates to
+          pattern: "^[0-9a-v]{20}$"
+          example: "9m4e2mr0ui3e8a215n4g"
+        occurred_at:
+          type: string
+          format: date-time
+          description: When the conversation occurred
+          example: "2023-01-01T00:00:00Z"
+        description:
+          type: string
+          description: Description of the conversation
+          minLength: 1
+          example: "Discussed quarterly goals"
+        actions:
+          type: array
+          description: IDs of actions associated with the conversation
+          items:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+        themes:
+          type: array
+          description: IDs of themes associated with the conversation
+          items:
+            type: string
+            pattern: "^[0-9a-v]{20}$"
+      required:
+        - person_id
+        - occurred_at
+        - description
+
+    UpdateConversationRequest:
       type: object
       properties:
         person_id:

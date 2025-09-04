@@ -23,3 +23,21 @@ FROM conversation c
 JOIN action_conversation ac ON ac.conversation_id = c.id
 JOIN action a ON a.id = ac.action_id
 WHERE a.person_id = x2b(sqlc.arg(person_id));
+
+-- name: GetConversationByID :one
+SELECT sqlc.embed(conversation)
+FROM conversation
+WHERE id = x2b(sqlc.arg(id));
+
+-- name: UpdateConversation :one
+UPDATE conversation
+SET person_id = x2b(sqlc.arg(person_id)),
+    description = sqlc.arg(description),
+    occurred_at = sqlc.arg(occurred_at),
+    updated_at = NOW()
+WHERE id = x2b(sqlc.arg(id))
+RETURNING sqlc.embed(conversation);
+
+-- name: DeleteConversation :exec
+DELETE FROM conversation
+WHERE id = x2b(sqlc.arg(id));

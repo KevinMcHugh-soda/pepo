@@ -42,7 +42,7 @@ func main() {
 	combinedAPIHandler := handlers.NewCombinedAPIHandler(personHandler, actionHandler, conversationHandler)
 
 	zap.L().Info("setting up HTTP server")
-	srv, err := server.New(cfg, combinedAPIHandler, personHandler, actionHandler)
+	srv, err := server.New(cfg, combinedAPIHandler, personHandler, actionHandler, conversationHandler)
 	if err != nil {
 		zap.L().Fatal("failed to create server", zap.Error(err))
 	}

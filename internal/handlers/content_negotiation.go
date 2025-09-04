@@ -538,6 +538,69 @@ func (h *ContentNegotiatingHandler) CreateConversation(ctx context.Context, req 
 	return result, nil
 }
 
+// GetConversationById handles both JSON and HTML requests for getting a conversation by ID
+func (h *ContentNegotiatingHandler) GetConversationById(ctx context.Context, params api.GetConversationByIdParams) (api.GetConversationByIdRes, error) {
+	result, err := h.combinedHandler.GetConversationById(ctx, params)
+	if err != nil {
+		return result, err
+	}
+
+	if req := h.getRequestFromContext(ctx); req != nil {
+		if h.determineResponseType(req) == "text/html" {
+			format := req.URL.Query().Get("format")
+			switch conv := result.(type) {
+			case *api.Conversation:
+				tmplConv := templates.Conversation{
+					ID:          conv.ID,
+					PersonID:    conv.PersonID,
+					OccurredAt:  conv.OccurredAt,
+					Description: conv.Description,
+					CreatedAt:   conv.CreatedAt,
+					UpdatedAt:   conv.UpdatedAt,
+				}
+				if format == "edit" {
+					return &api.GetConversationByIdOKTextHTML{Data: renderTemplate(templates.EditConversationForm(tmplConv))}, nil
+				}
+				return &api.GetConversationByIdOKTextHTML{Data: renderTemplate(templates.ConversationItem(tmplConv))}, nil
+			}
+		}
+	}
+
+	return result, nil
+}
+
+// UpdateConversation handles both JSON and HTML requests for updating a conversation
+func (h *ContentNegotiatingHandler) UpdateConversation(ctx context.Context, req *api.UpdateConversationRequest, params api.UpdateConversationParams) (api.UpdateConversationRes, error) {
+	result, err := h.combinedHandler.UpdateConversation(ctx, req, params)
+	if err != nil {
+		return result, err
+	}
+
+	if httpReq := h.getRequestFromContext(ctx); httpReq != nil {
+		if h.determineResponseType(httpReq) == "text/html" {
+			switch conv := result.(type) {
+			case *api.Conversation:
+				tmplConv := templates.Conversation{
+					ID:          conv.ID,
+					PersonID:    conv.PersonID,
+					OccurredAt:  conv.OccurredAt,
+					Description: conv.Description,
+					CreatedAt:   conv.CreatedAt,
+					UpdatedAt:   conv.UpdatedAt,
+				}
+				return &api.UpdateConversationOKTextHTML{Data: renderTemplate(templates.ConversationItem(tmplConv))}, nil
+			}
+		}
+	}
+
+	return result, nil
+}
+
+// DeleteConversation handles deleting a conversation
+func (h *ContentNegotiatingHandler) DeleteConversation(ctx context.Context, params api.DeleteConversationParams) (api.DeleteConversationRes, error) {
+	return h.combinedHandler.DeleteConversation(ctx, params)
+}
+
 // GetPersonTimeline handles both JSON and HTML requests for a person's timeline
 func (h *ContentNegotiatingHandler) GetPersonTimeline(ctx context.Context, params api.GetPersonTimelineParams) (api.GetPersonTimelineRes, error) {
 	result, err := h.combinedHandler.GetPersonTimeline(ctx, params)

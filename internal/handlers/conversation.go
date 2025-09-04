@@ -115,3 +115,141 @@ func (h *ConversationHandler) CreateConversation(ctx context.Context, req *api.C
 		UpdatedAt:   conv.UpdatedAt,
 	}, nil
 }
+
+// GetConversationById retrieves a conversation by ID
+func (h *ConversationHandler) GetConversationById(ctx context.Context, params api.GetConversationByIdParams) (api.GetConversationByIdRes, error) {
+	row, err := h.queries.GetConversationByID(ctx, params.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &api.GetConversationByIdNotFound{
+				Message: "Conversation not found",
+				Code:    "NOT_FOUND",
+			}, nil
+		}
+		zap.L().Error("error getting conversation", zap.Error(err))
+		return &api.GetConversationByIdInternalServerError{
+			Message: "Failed to get conversation",
+			Code:    "INTERNAL_ERROR",
+		}, nil
+	}
+
+	c := row.Conversation
+	convID, _ := xid.FromBytes(c.ID)
+	personID, _ := xid.FromBytes(c.PersonID)
+	return &api.Conversation{
+		ID:          convID.String(),
+		PersonID:    personID.String(),
+		OccurredAt:  c.OccurredAt,
+		Description: c.Description,
+		CreatedAt:   c.CreatedAt,
+		UpdatedAt:   c.UpdatedAt,
+	}, nil
+}
+
+// UpdateConversation handles updating a conversation
+func (h *ConversationHandler) UpdateConversation(ctx context.Context, req *api.UpdateConversationRequest, params api.UpdateConversationParams) (api.UpdateConversationRes, error) {
+	if req.PersonID == "" {
+		return &api.UpdateConversationBadRequest{
+			Message: "Person ID is required",
+			Code:    "VALIDATION_ERROR",
+		}, nil
+	}
+	if req.Description == "" {
+		return &api.UpdateConversationBadRequest{
+			Message: "Description is required",
+			Code:    "VALIDATION_ERROR",
+		}, nil
+	}
+
+	row, err := h.queries.UpdateConversation(ctx, db.UpdateConversationParams{
+		ID:          params.ID,
+		PersonID:    req.PersonID,
+		Description: req.Description,
+		OccurredAt:  req.OccurredAt,
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &api.UpdateConversationNotFound{
+				Message: "Conversation not found",
+				Code:    "NOT_FOUND",
+			}, nil
+		}
+		zap.L().Error("error updating conversation", zap.Error(err))
+		return &api.UpdateConversationInternalServerError{
+			Message: "Failed to update conversation",
+			Code:    "INTERNAL_ERROR",
+		}, nil
+	}
+
+	// Update associated actions
+	if err := h.queries.DeleteActionsByConversationID(ctx, params.ID); err != nil {
+		zap.L().Error("error deleting conversation actions", zap.Error(err))
+		return &api.UpdateConversationInternalServerError{
+			Message: "Failed to update actions",
+			Code:    "INTERNAL_ERROR",
+		}, nil
+	}
+	for _, aID := range req.Actions {
+		if err := h.queries.AddActionToConversation(ctx, db.AddActionToConversationParams{
+			ActionID:       aID,
+			ConversationID: params.ID,
+		}); err != nil {
+			zap.L().Error("error adding action to conversation", zap.Error(err))
+			return &api.UpdateConversationInternalServerError{
+				Message: "Failed to update actions",
+				Code:    "INTERNAL_ERROR",
+			}, nil
+		}
+	}
+
+	// Update associated themes
+	if err := h.queries.DeleteThemesByConversationID(ctx, params.ID); err != nil {
+		zap.L().Error("error deleting conversation themes", zap.Error(err))
+		return &api.UpdateConversationInternalServerError{
+			Message: "Failed to update themes",
+			Code:    "INTERNAL_ERROR",
+		}, nil
+	}
+	for _, tID := range req.Themes {
+		if err := h.queries.AddThemeToConversation(ctx, db.AddThemeToConversationParams{
+			ConversationID: params.ID,
+			ThemeID:        tID,
+		}); err != nil {
+			zap.L().Error("error adding theme to conversation", zap.Error(err))
+			return &api.UpdateConversationInternalServerError{
+				Message: "Failed to update themes",
+				Code:    "INTERNAL_ERROR",
+			}, nil
+		}
+	}
+
+	conv := row.Conversation
+	convID, _ := xid.FromBytes(conv.ID)
+	personID, _ := xid.FromBytes(conv.PersonID)
+	return &api.Conversation{
+		ID:          convID.String(),
+		PersonID:    personID.String(),
+		OccurredAt:  conv.OccurredAt,
+		Description: conv.Description,
+		CreatedAt:   conv.CreatedAt,
+		UpdatedAt:   conv.UpdatedAt,
+	}, nil
+}
+
+// DeleteConversation deletes a conversation
+func (h *ConversationHandler) DeleteConversation(ctx context.Context, params api.DeleteConversationParams) (api.DeleteConversationRes, error) {
+	if err := h.queries.DeleteActionsByConversationID(ctx, params.ID); err != nil {
+		zap.L().Error("error deleting conversation actions", zap.Error(err))
+	}
+	if err := h.queries.DeleteThemesByConversationID(ctx, params.ID); err != nil {
+		zap.L().Error("error deleting conversation themes", zap.Error(err))
+	}
+	if err := h.queries.DeleteConversation(ctx, params.ID); err != nil {
+		zap.L().Error("error deleting conversation", zap.Error(err))
+		return &api.DeleteConversationInternalServerError{
+			Message: "Failed to delete conversation",
+			Code:    "INTERNAL_ERROR",
+		}, nil
+	}
+	return &api.DeleteConversationNoContent{}, nil
+}

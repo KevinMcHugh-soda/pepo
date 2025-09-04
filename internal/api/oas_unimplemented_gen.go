@@ -49,6 +49,15 @@ func (UnimplementedHandler) DeleteAction(ctx context.Context, params DeleteActio
 	return r, ht.ErrNotImplemented
 }
 
+// DeleteConversation implements deleteConversation operation.
+//
+// Delete a conversation.
+//
+// DELETE /conversations/{id}
+func (UnimplementedHandler) DeleteConversation(ctx context.Context, params DeleteConversationParams) (r DeleteConversationRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // DeletePerson implements deletePerson operation.
 //
 // Delete a person.
@@ -73,6 +82,15 @@ func (UnimplementedHandler) GetActionById(ctx context.Context, params GetActionB
 //
 // GET /actions
 func (UnimplementedHandler) GetActions(ctx context.Context, params GetActionsParams) (r GetActionsRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// GetConversationById implements getConversationById operation.
+//
+// Get a conversation by ID.
+//
+// GET /conversations/{id}
+func (UnimplementedHandler) GetConversationById(ctx context.Context, params GetConversationByIdParams) (r GetConversationByIdRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
@@ -118,6 +136,15 @@ func (UnimplementedHandler) GetPersons(ctx context.Context, params GetPersonsPar
 //
 // PUT /actions/{id}
 func (UnimplementedHandler) UpdateAction(ctx context.Context, req *UpdateActionRequest, params UpdateActionParams) (r UpdateActionRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// UpdateConversation implements updateConversation operation.
+//
+// Update a conversation.
+//
+// PUT /conversations/{id}
+func (UnimplementedHandler) UpdateConversation(ctx context.Context, req *UpdateConversationRequest, params UpdateConversationParams) (r UpdateConversationRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

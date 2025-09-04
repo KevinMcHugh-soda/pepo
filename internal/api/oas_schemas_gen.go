@@ -243,7 +243,9 @@ func (s *Conversation) SetUpdatedAt(val time.Time) {
 	s.UpdatedAt = val
 }
 
-func (*Conversation) createConversationRes() {}
+func (*Conversation) createConversationRes()  {}
+func (*Conversation) getConversationByIdRes() {}
+func (*Conversation) updateConversationRes()  {}
 
 type CreateActionBadRequest Error
 
@@ -535,6 +537,19 @@ type DeleteActionNotFound Error
 
 func (*DeleteActionNotFound) deleteActionRes() {}
 
+type DeleteConversationInternalServerError Error
+
+func (*DeleteConversationInternalServerError) deleteConversationRes() {}
+
+// DeleteConversationNoContent is response for DeleteConversation operation.
+type DeleteConversationNoContent struct{}
+
+func (*DeleteConversationNoContent) deleteConversationRes() {}
+
+type DeleteConversationNotFound Error
+
+func (*DeleteConversationNotFound) deleteConversationRes() {}
+
 type DeletePersonInternalServerError Error
 
 func (*DeletePersonInternalServerError) deletePersonRes() {}
@@ -687,6 +702,30 @@ func (s *GetActionsValence) UnmarshalText(data []byte) error {
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
+
+type GetConversationByIdInternalServerError Error
+
+func (*GetConversationByIdInternalServerError) getConversationByIdRes() {}
+
+type GetConversationByIdNotFound Error
+
+func (*GetConversationByIdNotFound) getConversationByIdRes() {}
+
+type GetConversationByIdOKTextHTML struct {
+	Data io.Reader
+}
+
+// Read reads data from the Data reader.
+//
+// Kept to satisfy the io.Reader interface.
+func (s GetConversationByIdOKTextHTML) Read(p []byte) (n int, err error) {
+	if s.Data == nil {
+		return 0, io.EOF
+	}
+	return s.Data.Read(p)
+}
+
+func (*GetConversationByIdOKTextHTML) getConversationByIdRes() {}
 
 type GetPersonActionsInternalServerError Error
 
@@ -1633,6 +1672,98 @@ func (s *UpdateActionRequestValence) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+type UpdateConversationBadRequest Error
+
+func (*UpdateConversationBadRequest) updateConversationRes() {}
+
+type UpdateConversationInternalServerError Error
+
+func (*UpdateConversationInternalServerError) updateConversationRes() {}
+
+type UpdateConversationNotFound Error
+
+func (*UpdateConversationNotFound) updateConversationRes() {}
+
+type UpdateConversationOKTextHTML struct {
+	Data io.Reader
+}
+
+// Read reads data from the Data reader.
+//
+// Kept to satisfy the io.Reader interface.
+func (s UpdateConversationOKTextHTML) Read(p []byte) (n int, err error) {
+	if s.Data == nil {
+		return 0, io.EOF
+	}
+	return s.Data.Read(p)
+}
+
+func (*UpdateConversationOKTextHTML) updateConversationRes() {}
+
+// Ref: #/components/schemas/UpdateConversationRequest
+type UpdateConversationRequest struct {
+	// ID of the person this conversation relates to.
+	PersonID string `json:"person_id"`
+	// When the conversation occurred.
+	OccurredAt time.Time `json:"occurred_at"`
+	// Description of the conversation.
+	Description string `json:"description"`
+	// IDs of actions associated with the conversation.
+	Actions []string `json:"actions"`
+	// IDs of themes associated with the conversation.
+	Themes []string `json:"themes"`
+}
+
+// GetPersonID returns the value of PersonID.
+func (s *UpdateConversationRequest) GetPersonID() string {
+	return s.PersonID
+}
+
+// GetOccurredAt returns the value of OccurredAt.
+func (s *UpdateConversationRequest) GetOccurredAt() time.Time {
+	return s.OccurredAt
+}
+
+// GetDescription returns the value of Description.
+func (s *UpdateConversationRequest) GetDescription() string {
+	return s.Description
+}
+
+// GetActions returns the value of Actions.
+func (s *UpdateConversationRequest) GetActions() []string {
+	return s.Actions
+}
+
+// GetThemes returns the value of Themes.
+func (s *UpdateConversationRequest) GetThemes() []string {
+	return s.Themes
+}
+
+// SetPersonID sets the value of PersonID.
+func (s *UpdateConversationRequest) SetPersonID(val string) {
+	s.PersonID = val
+}
+
+// SetOccurredAt sets the value of OccurredAt.
+func (s *UpdateConversationRequest) SetOccurredAt(val time.Time) {
+	s.OccurredAt = val
+}
+
+// SetDescription sets the value of Description.
+func (s *UpdateConversationRequest) SetDescription(val string) {
+	s.Description = val
+}
+
+// SetActions sets the value of Actions.
+func (s *UpdateConversationRequest) SetActions(val []string) {
+	s.Actions = val
+}
+
+// SetThemes sets the value of Themes.
+func (s *UpdateConversationRequest) SetThemes(val []string) {
+	s.Themes = val
 }
 
 type UpdatePersonBadRequest Error
