@@ -32,6 +32,12 @@ type Handler interface {
 	//
 	// DELETE /actions/{id}
 	DeleteAction(ctx context.Context, params DeleteActionParams) (DeleteActionRes, error)
+	// DeleteConversation implements deleteConversation operation.
+	//
+	// Delete a conversation.
+	//
+	// DELETE /conversations/{id}
+	DeleteConversation(ctx context.Context, params DeleteConversationParams) (DeleteConversationRes, error)
 	// DeletePerson implements deletePerson operation.
 	//
 	// Delete a person.
@@ -50,6 +56,12 @@ type Handler interface {
 	//
 	// GET /actions
 	GetActions(ctx context.Context, params GetActionsParams) (GetActionsRes, error)
+	// GetConversationById implements getConversationById operation.
+	//
+	// Get a conversation by ID.
+	//
+	// GET /conversations/{id}
+	GetConversationById(ctx context.Context, params GetConversationByIdParams) (GetConversationByIdRes, error)
 	// GetPersonActions implements getPersonActions operation.
 	//
 	// Get actions for a specific person.
@@ -80,6 +92,12 @@ type Handler interface {
 	//
 	// PUT /actions/{id}
 	UpdateAction(ctx context.Context, req *UpdateActionRequest, params UpdateActionParams) (UpdateActionRes, error)
+	// UpdateConversation implements updateConversation operation.
+	//
+	// Update a conversation.
+	//
+	// PUT /conversations/{id}
+	UpdateConversation(ctx context.Context, req *UpdateConversationRequest, params UpdateConversationParams) (UpdateConversationRes, error)
 	// UpdatePerson implements updatePerson operation.
 	//
 	// Update a person.

@@ -26,7 +26,7 @@ type Server struct {
 }
 
 // New creates a new server instance
-func New(cfg *config.Config, apiHandler *handlers.CombinedAPIHandler, personHandler *handlers.PersonHandler, actionHandler *handlers.ActionHandler) (*Server, error) {
+func New(cfg *config.Config, apiHandler *handlers.CombinedAPIHandler, personHandler *handlers.PersonHandler, actionHandler *handlers.ActionHandler, conversationHandler *handlers.ConversationHandler) (*Server, error) {
 	// Create content negotiating handler
 	contentHandler := handlers.NewContentNegotiatingHandler(apiHandler)
 
@@ -37,7 +37,7 @@ func New(cfg *config.Config, apiHandler *handlers.CombinedAPIHandler, personHand
 	}
 
 	// Setup routes
-	mux := setupRoutes(apiServer, personHandler, actionHandler)
+	mux := setupRoutes(apiServer, personHandler, actionHandler, conversationHandler)
 
 	// Wrap with middleware
 	handler := middleware.Chain(mux,
@@ -115,7 +115,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 }
 
 // setupRoutes configures all HTTP routes
-func setupRoutes(apiServer *api.Server, personHandler *handlers.PersonHandler, actionHandler *handlers.ActionHandler) *http.ServeMux {
+func setupRoutes(apiServer *api.Server, personHandler *handlers.PersonHandler, actionHandler *handlers.ActionHandler, conversationHandler *handlers.ConversationHandler) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Health check endpoint (both at root and API level)
@@ -140,7 +140,7 @@ func setupRoutes(apiServer *api.Server, personHandler *handlers.PersonHandler, a
 	mux.Handle("/people", createConvenienceHandler(apiServer, "/people"))
 	mux.HandleFunc("/actions/", createActionHandler(apiServer, actionHandler))
 	mux.Handle("/actions", createConvenienceHandler(apiServer, "/actions"))
-	mux.HandleFunc("/conversations/", createConversationHandler(apiServer))
+	mux.HandleFunc("/conversations/", createConversationHandler(apiServer, conversationHandler))
 	mux.Handle("/conversations", createConvenienceHandler(apiServer, "/conversations"))
 
 	// Static file serving for development
@@ -214,16 +214,51 @@ func createActionHandler(apiServer *api.Server, actionHandler *handlers.ActionHa
 	}
 }
 
-func createConversationHandler(apiServer *api.Server) http.HandlerFunc {
+func createConversationHandler(apiServer *api.Server, conversationHandler *handlers.ConversationHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet && r.URL.Path == "/conversations/new" {
-			personID := r.URL.Query().Get("person_id")
-			w.Header().Set("Content-Type", "text/html")
-			w.WriteHeader(http.StatusOK)
-			if err := templates.RecordConversationPage(personID).Render(r.Context(), w); err != nil {
-				log.Printf("Error rendering template: %v", err)
+		if r.Method == http.MethodGet {
+			switch {
+			case strings.HasSuffix(r.URL.Path, "/edit"):
+				id := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/conversations/"), "/edit")
+				params := api.GetConversationByIdParams{ID: id}
+				res, err := conversationHandler.GetConversationById(r.Context(), params)
+				if err != nil {
+					log.Printf("Error getting conversation: %v", err)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+				switch conv := res.(type) {
+				case *api.Conversation:
+					tmplConv := templates.Conversation{
+						ID:          conv.ID,
+						PersonID:    conv.PersonID,
+						OccurredAt:  conv.OccurredAt,
+						Description: conv.Description,
+						CreatedAt:   conv.CreatedAt,
+						UpdatedAt:   conv.UpdatedAt,
+					}
+					w.Header().Set("Content-Type", "text/html")
+					w.WriteHeader(http.StatusOK)
+					if err := templates.EditConversationPage(tmplConv).Render(r.Context(), w); err != nil {
+						log.Printf("Error rendering template: %v", err)
+					}
+					return
+				case *api.GetConversationByIdNotFound:
+					http.NotFound(w, r)
+					return
+				default:
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+			case r.URL.Path == "/conversations/new":
+				personID := r.URL.Query().Get("person_id")
+				w.Header().Set("Content-Type", "text/html")
+				w.WriteHeader(http.StatusOK)
+				if err := templates.RecordConversationPage(personID).Render(r.Context(), w); err != nil {
+					log.Printf("Error rendering template: %v", err)
+				}
+				return
 			}
-			return
 		}
 		apiServer.ServeHTTP(w, r)
 	}

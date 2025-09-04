@@ -52,6 +52,12 @@ type Invoker interface {
 	//
 	// DELETE /actions/{id}
 	DeleteAction(ctx context.Context, params DeleteActionParams) (DeleteActionRes, error)
+	// DeleteConversation invokes deleteConversation operation.
+	//
+	// Delete a conversation.
+	//
+	// DELETE /conversations/{id}
+	DeleteConversation(ctx context.Context, params DeleteConversationParams) (DeleteConversationRes, error)
 	// DeletePerson invokes deletePerson operation.
 	//
 	// Delete a person.
@@ -70,6 +76,12 @@ type Invoker interface {
 	//
 	// GET /actions
 	GetActions(ctx context.Context, params GetActionsParams) (GetActionsRes, error)
+	// GetConversationById invokes getConversationById operation.
+	//
+	// Get a conversation by ID.
+	//
+	// GET /conversations/{id}
+	GetConversationById(ctx context.Context, params GetConversationByIdParams) (GetConversationByIdRes, error)
 	// GetPersonActions invokes getPersonActions operation.
 	//
 	// Get actions for a specific person.
@@ -100,6 +112,12 @@ type Invoker interface {
 	//
 	// PUT /actions/{id}
 	UpdateAction(ctx context.Context, request *UpdateActionRequest, params UpdateActionParams) (UpdateActionRes, error)
+	// UpdateConversation invokes updateConversation operation.
+	//
+	// Update a conversation.
+	//
+	// PUT /conversations/{id}
+	UpdateConversation(ctx context.Context, request *UpdateConversationRequest, params UpdateConversationParams) (UpdateConversationRes, error)
 	// UpdatePerson invokes updatePerson operation.
 	//
 	// Update a person.
@@ -466,6 +484,96 @@ func (c *Client) sendDeleteAction(ctx context.Context, params DeleteActionParams
 	return result, nil
 }
 
+// DeleteConversation invokes deleteConversation operation.
+//
+// Delete a conversation.
+//
+// DELETE /conversations/{id}
+func (c *Client) DeleteConversation(ctx context.Context, params DeleteConversationParams) (DeleteConversationRes, error) {
+	res, err := c.sendDeleteConversation(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendDeleteConversation(ctx context.Context, params DeleteConversationParams) (res DeleteConversationRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("deleteConversation"),
+		semconv.HTTPRequestMethodKey.String("DELETE"),
+		semconv.HTTPRouteKey.String("/conversations/{id}"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, DeleteConversationOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [2]string
+	pathParts[0] = "/conversations/"
+	{
+		// Encode "id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "DELETE", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeDeleteConversationResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // DeletePerson invokes deletePerson operation.
 //
 // Delete a person.
@@ -783,6 +891,96 @@ func (c *Client) sendGetActions(ctx context.Context, params GetActionsParams) (r
 
 	stage = "DecodeResponse"
 	result, err := decodeGetActionsResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetConversationById invokes getConversationById operation.
+//
+// Get a conversation by ID.
+//
+// GET /conversations/{id}
+func (c *Client) GetConversationById(ctx context.Context, params GetConversationByIdParams) (GetConversationByIdRes, error) {
+	res, err := c.sendGetConversationById(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendGetConversationById(ctx context.Context, params GetConversationByIdParams) (res GetConversationByIdRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("getConversationById"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.HTTPRouteKey.String("/conversations/{id}"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, GetConversationByIdOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [2]string
+	pathParts[0] = "/conversations/"
+	{
+		// Encode "id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeGetConversationByIdResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
@@ -1351,6 +1549,99 @@ func (c *Client) sendUpdateAction(ctx context.Context, request *UpdateActionRequ
 
 	stage = "DecodeResponse"
 	result, err := decodeUpdateActionResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// UpdateConversation invokes updateConversation operation.
+//
+// Update a conversation.
+//
+// PUT /conversations/{id}
+func (c *Client) UpdateConversation(ctx context.Context, request *UpdateConversationRequest, params UpdateConversationParams) (UpdateConversationRes, error) {
+	res, err := c.sendUpdateConversation(ctx, request, params)
+	return res, err
+}
+
+func (c *Client) sendUpdateConversation(ctx context.Context, request *UpdateConversationRequest, params UpdateConversationParams) (res UpdateConversationRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("updateConversation"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
+		semconv.HTTPRouteKey.String("/conversations/{id}"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, UpdateConversationOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [2]string
+	pathParts[0] = "/conversations/"
+	{
+		// Encode "id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "PUT", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeUpdateConversationRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeUpdateConversationResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

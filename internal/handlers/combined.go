@@ -81,3 +81,15 @@ func (h *CombinedAPIHandler) GetPersonsWithLastActivity(ctx context.Context, par
 func (h *CombinedAPIHandler) CreateConversation(ctx context.Context, req *api.CreateConversationRequest) (api.CreateConversationRes, error) {
 	return h.conversationHandler.CreateConversation(ctx, req)
 }
+
+func (h *CombinedAPIHandler) GetConversationById(ctx context.Context, params api.GetConversationByIdParams) (api.GetConversationByIdRes, error) {
+	return h.conversationHandler.GetConversationById(ctx, params)
+}
+
+func (h *CombinedAPIHandler) UpdateConversation(ctx context.Context, req *api.UpdateConversationRequest, params api.UpdateConversationParams) (api.UpdateConversationRes, error) {
+	return h.conversationHandler.UpdateConversation(ctx, req, params)
+}
+
+func (h *CombinedAPIHandler) DeleteConversation(ctx context.Context, params api.DeleteConversationParams) (api.DeleteConversationRes, error) {
+	return h.conversationHandler.DeleteConversation(ctx, params)
+}

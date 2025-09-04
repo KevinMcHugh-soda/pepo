@@ -17,6 +17,10 @@ type DeleteActionRes interface {
 	deleteActionRes()
 }
 
+type DeleteConversationRes interface {
+	deleteConversationRes()
+}
+
 type DeletePersonRes interface {
 	deletePersonRes()
 }
@@ -27,6 +31,10 @@ type GetActionByIdRes interface {
 
 type GetActionsRes interface {
 	getActionsRes()
+}
+
+type GetConversationByIdRes interface {
+	getConversationByIdRes()
 }
 
 type GetPersonActionsRes interface {
@@ -47,6 +55,10 @@ type GetPersonsRes interface {
 
 type UpdateActionRes interface {
 	updateActionRes()
+}
+
+type UpdateConversationRes interface {
+	updateConversationRes()
 }
 
 type UpdatePersonRes interface {
