@@ -386,11 +386,11 @@ templ RecordActionPage(personID string) {
        @Layout("Record Action") {
                if personID != "" {
                        <a href={ "/people/" + personID } class="text-blue-600 hover:text-blue-800 flex items-center mb-4">
-                               \u2190 Back to Person
+                               ← Back to Person
                        </a>
                } else {
                        <a href="/" class="text-blue-600 hover:text-blue-800 flex items-center mb-4">
-                               \u2190 Back to People List
+                               ← Back to People List
                        </a>
                }
                @RecordActionForm(personID, "#action-form-result")
