@@ -60,15 +60,15 @@ templ ConversationList(conversations []Conversation) {
         }
 }
 
-templ RecordConversationForm(personID string, targetSelector string) {
+templ RecordConversationForm(personID string, personName string, targetSelector string) {
         <div class="bg-white rounded-lg shadow p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4">Record New Conversation</h2>
                <form hx-post="/api/v1/conversations" hx-target={ targetSelector } hx-swap="afterbegin" hx-on::after-request="if(event.detail.successful) this.reset()" class="space-y-4">
-                       if personID != "" {
+                      if personID != "" {
                                <!-- Person is pre-selected -->
                                <input type="hidden" name="person_id" value={ personID }/>
                                <div class="text-sm text-gray-600 mb-4">
-                                       Recording conversation for this person
+                                       Recording conversation for { personName }
                                </div>
                        } else {
                                <div>
@@ -177,7 +177,7 @@ templ RecordConversationForm(personID string, targetSelector string) {
         </div>
 }
 
-templ RecordConversationPage(personID string) {
+templ RecordConversationPage(personID string, personName string) {
        @Layout("Record Conversation") {
                if personID != "" {
                        <a href={ "/people/" + personID } class="text-blue-600 hover:text-blue-800 flex items-center mb-4">
@@ -188,7 +188,7 @@ templ RecordConversationPage(personID string) {
                                ← Back to People List
                        </a>
                }
-               @RecordConversationForm(personID, "#conversation-form-result")
+               @RecordConversationForm(personID, personName, "#conversation-form-result")
                <div id="conversation-form-result" class="mt-4"></div>
        }
 }
