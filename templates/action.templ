@@ -15,6 +15,12 @@ type Action struct {
        Themes      []Theme   `json:"themes"`
 }
 
+type ActionOption struct {
+        ID          string `json:"id"`
+        Description string `json:"description"`
+        Selected    bool   `json:"selected"`
+}
+
 func getValenceColor(valence string) string {
 	if valence == "positive" {
 		return "text-green-600"
@@ -84,7 +90,25 @@ templ ActionList(actions []Action) {
 }
 
 templ ActionError(message string) {
-	<div class="text-red-500">{ message }</div>
+        <div class="text-red-500">{ message }</div>
+}
+
+templ ActionSelectOptions(actions []ActionOption) {
+        if len(actions) == 0 {
+                <option value="">No actions</option>
+        } else {
+                for _, action := range actions {
+                        <option value={ action.ID } selected?={ action.Selected }>{ action.Description }</option>
+                }
+        }
+}
+
+templ ActionSelectError() {
+        <option value="">Error loading actions</option>
+}
+
+templ ActionSelectLoading() {
+        <option value="">Loading actions...</option>
 }
 
 templ ActionLoading() {
