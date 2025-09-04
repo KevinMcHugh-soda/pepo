@@ -63,27 +63,31 @@ templ ConversationList(conversations []Conversation) {
 templ RecordConversationForm(personID string, targetSelector string) {
         <div class="bg-white rounded-lg shadow p-6 mb-6">
                 <h2 class="text-xl font-semibold mb-4">Record New Conversation</h2>
-                <form hx-post="/api/v1/conversations" hx-target={ targetSelector } hx-swap="afterbegin" hx-on::after-request="if(event.detail.successful) this.reset()" class="space-y-4">
-                        if personID != "" {
-                                <input type="hidden" name="person_id" value={ personID }/>
-                        } else {
-                                <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Person</label>
-                                        <select
-                                                name="person_id"
-                                                id="conversation-person-select"
-                                                required
-                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                hx-get="/api/v1/people?format=select"
-                                                hx-trigger="load"
-                                                hx-target="#conversation-person-select"
-                                                hx-swap="innerHTML"
-                                                hx-on:change="htmx.ajax('GET', '/forms/actions/select?person_id=' + this.value, '#conversation-action-select'); htmx.ajax('GET', '/forms/themes/select?person_id=' + this.value, '#conversation-theme-select')"
-                                        >
-                                                <option value="">Loading people...</option>
-                                        </select>
-                                </div>
-                        }
+               <form hx-post="/api/v1/conversations" hx-target={ targetSelector } hx-swap="afterbegin" hx-on::after-request="if(event.detail.successful) this.reset()" class="space-y-4">
+                       if personID != "" {
+                               <!-- Person is pre-selected -->
+                               <input type="hidden" name="person_id" value={ personID }/>
+                               <div class="text-sm text-gray-600 mb-4">
+                                       Recording conversation for this person
+                               </div>
+                       } else {
+                               <div>
+                                       <label class="block text-sm font-medium text-gray-700 mb-1">Person</label>
+                                       <select
+                                               name="person_id"
+                                               id="conversation-person-select"
+                                               required
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                               hx-get="/api/v1/people?format=select"
+                                               hx-trigger="load"
+                                               hx-target="#conversation-person-select"
+                                               hx-swap="innerHTML"
+                                               hx-on:change="htmx.ajax('GET', '/forms/actions/select?person_id=' + this.value, '#conversation-action-select'); htmx.ajax('GET', '/forms/themes/select?person_id=' + this.value, '#conversation-theme-select')"
+                                       >
+                                               <option value="">Loading people...</option>
+                                       </select>
+                               </div>
+                       }
                         <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                                 <textarea
