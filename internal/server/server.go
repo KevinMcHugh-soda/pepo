@@ -140,7 +140,7 @@ func setupRoutes(apiServer *api.Server, personHandler *handlers.PersonHandler, a
 	mux.Handle("/people", createConvenienceHandler(apiServer, "/people"))
 	mux.HandleFunc("/actions/", createActionHandler(apiServer, actionHandler))
 	mux.Handle("/actions", createConvenienceHandler(apiServer, "/actions"))
-	mux.HandleFunc("/conversations/", createConversationHandler(apiServer))
+	mux.HandleFunc("/conversations/", createConversationHandler(apiServer, personHandler))
 	mux.Handle("/conversations", createConvenienceHandler(apiServer, "/conversations"))
 
 	// Static file serving for development
@@ -214,13 +214,22 @@ func createActionHandler(apiServer *api.Server, actionHandler *handlers.ActionHa
 	}
 }
 
-func createConversationHandler(apiServer *api.Server) http.HandlerFunc {
+func createConversationHandler(apiServer *api.Server, personHandler *handlers.PersonHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet && r.URL.Path == "/conversations/new" {
 			personID := r.URL.Query().Get("person_id")
+			personName := ""
+			if personID != "" {
+				params := api.GetPersonByIdParams{ID: personID}
+				if res, err := personHandler.GetPersonById(r.Context(), params); err == nil {
+					if p, ok := res.(*api.Person); ok {
+						personName = p.Name
+					}
+				}
+			}
 			w.Header().Set("Content-Type", "text/html")
 			w.WriteHeader(http.StatusOK)
-			if err := templates.RecordConversationPage(personID).Render(r.Context(), w); err != nil {
+			if err := templates.RecordConversationPage(personID, personName).Render(r.Context(), w); err != nil {
 				log.Printf("Error rendering template: %v", err)
 			}
 			return
