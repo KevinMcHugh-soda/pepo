@@ -850,12 +850,12 @@ func RecordActionPage(personID string) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "\" class=\"text-blue-600 hover:text-blue-800 flex items-center mb-4\">\\u2190 Back to Person</a>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, "\" class=\"text-blue-600 hover:text-blue-800 flex items-center mb-4\">← Back to Person</a>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "<a href=\"/\" class=\"text-blue-600 hover:text-blue-800 flex items-center mb-4\">\\u2190 Back to People List</a>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "<a href=\"/\" class=\"text-blue-600 hover:text-blue-800 flex items-center mb-4\">← Back to People List</a>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
