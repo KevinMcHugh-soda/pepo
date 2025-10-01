@@ -12,6 +12,7 @@ require (
 	github.com/mark3labs/mcp-go v0.38.0
 	github.com/ogen-go/ogen v1.14.0
 	github.com/rs/xid v1.5.0
+	github.com/sashabaranov/go-openai v1.24.0
 	go.opentelemetry.io/otel v1.36.0
 	go.opentelemetry.io/otel/metric v1.36.0
 	go.opentelemetry.io/otel/trace v1.36.0
