@@ -442,6 +442,19 @@ func (h *ActionHandler) HandleGetThemesForSelect(w http.ResponseWriter, r *http.
 		}
 	}
 
+	if convID := r.URL.Query().Get("conversation_id"); convID != "" {
+		rows, err := h.queries.ListThemesByConversationID(r.Context(), db.ListThemesByConversationIDParams{
+			ConversationID: convID,
+			Offset:         0,
+			Limit:          100,
+		})
+		if err == nil {
+			for _, row := range rows {
+				selected[row.Theme.ID.String()] = true
+			}
+		}
+	}
+
 	rows, err := h.queries.ListThemesByPersonID(r.Context(), db.ListThemesByPersonIDParams{
 		PersonID: personID,
 		Offset:   0,
@@ -539,6 +552,18 @@ func (h *ActionHandler) HandleGetActionsForSelect(w http.ResponseWriter, r *http
 		return
 	}
 
+	selected := map[string]bool{}
+	if convID := r.URL.Query().Get("conversation_id"); convID != "" {
+		selRows, err := h.queries.ListActionIDsByConversationID(r.Context(), convID)
+		if err == nil {
+			for _, idBytes := range selRows {
+				if id, err := xid.FromBytes(idBytes); err == nil {
+					selected[id.String()] = true
+				}
+			}
+		}
+	}
+
 	rows, err := h.queries.ListActionsByPersonID(r.Context(), db.ListActionsByPersonIDParams{
 		PersonID: personID,
 		Offset:   0,
@@ -556,6 +581,7 @@ func (h *ActionHandler) HandleGetActionsForSelect(w http.ResponseWriter, r *http
 		actions[i] = templates.ActionOption{
 			ID:          a.ID.String(),
 			Description: a.Description,
+			Selected:    selected[a.ID.String()],
 		}
 	}
 
