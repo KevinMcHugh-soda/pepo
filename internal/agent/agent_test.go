@@ -67,14 +67,14 @@ func TestHandleUserMessage_ToolInvocation(t *testing.T) {
 				ToolCall: &ToolCall{
 					ID:        "call-1",
 					Name:      "call_api",
-					Arguments: json.RawMessage(`{"method":"GET","path":"/status"}`),
+					Arguments: json.RawMessage(`{"method":"GET","path":"/people"}`),
 				},
 			},
 			ToolCalls: []ToolCall{
 				{
 					ID:        "call-1",
 					Name:      "call_api",
-					Arguments: json.RawMessage(`{"method":"GET","path":"/status"}`),
+					Arguments: json.RawMessage(`{"method":"GET","path":"/people"}`),
 				},
 			},
 		},
