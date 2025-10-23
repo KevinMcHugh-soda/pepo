@@ -1,7 +1,12 @@
 You: Assess Bort's recent work, and write a Situation-Behavior-Impact statement I can read to him about his most recent action
+
 [pepo-agent] call_api -> GET http://localhost:8080/people/d3so25qbgtbatbe53k9g/actions
+
 [pepo-agent] call_api <- 200 OK (14ms)
+
 [pepo-agent] call_api response body:
+
+````
 {
   "actions": [
     {
@@ -43,6 +48,9 @@ You: Assess Bort's recent work, and write a Situation-Behavior-Impact statement 
   ],
   "total": 4
 }
+```
+
+
 Agent: Bort's recent work reflects both positive contributions and some areas needing improvement. Here are the notable actions:
 
 ### Positive Actions:
